@@ -1,9 +1,10 @@
-a3db5ebdad9d5a57b7997bb177e0b80d *DESCRIPTION
+ba084c73ed77dbb705396925488c60f7 *DESCRIPTION
 3eba3f8f481ce0c3ad5f6ba56d7dfc38 *NAMESPACE
 e64d1c6809d591e955c7bca1cad29ef7 *R/GDM_Table_Funcs.R
+e1a601aaaa161f6e8e2f6f3f2debfefd *build/vignette.rds
 d4bed48d3161db53b2492f6cf4d18f9f *data/gdm.RData
-5efc31e55bd3fea3fe67e476fe144c87 *inst/doc/gdmVignette.html
-e0800259d82c84a68eed8e71f8e664a9 *inst/doc/gdmVignette.pdf
+8e01a09d1db584360c25402d3e968caa *inst/doc/gdmVignette.pdf
+0d02039d8c2e3233297ab9a71c68103d *inst/doc/gdmVignette.pdf.asis
 cfde88f15ed9d72064498584f7fe1fc3 *inst/extdata/stackedVars.grd
 6a9aa0cb8dd7ec61fd85644b583292d1 *inst/extdata/stackedVars.gri
 52060e05105b321e0da4e8fcb3c1295e *man/createsitepair.Rd
@@ -33,3 +34,6 @@ ebddc07e450674ba7d63f0e3e623fe90 *src/NNLS_Double.cpp
 ab462c601ffdff50fa4cb8d6a6e3faa4 *src/myCallback.h
 28f46edb828912f952e2abe99a8f4ddc *src/stdafx.cpp
 2ec8dc1a653732ab45a7ebdac585943f *src/stdafx.h
+eeed31810ae4e0e345d55533992eafdf *vignettes/gdmVignette.Rmd
+bda525b4ca501c1118b1d5e039d24542 *vignettes/gdmVignette.bib
+0d02039d8c2e3233297ab9a71c68103d *vignettes/gdmVignette.pdf.asis
