@@ -1,6 +1,6 @@
-ba084c73ed77dbb705396925488c60f7 *DESCRIPTION
+9bb126738e376ad8f7dddf0ca167ab0c *DESCRIPTION
 3eba3f8f481ce0c3ad5f6ba56d7dfc38 *NAMESPACE
-e64d1c6809d591e955c7bca1cad29ef7 *R/GDM_Table_Funcs.R
+43c42bd965a6002b688293fceda53ca3 *R/GDM_Table_Funcs.R
 e1a601aaaa161f6e8e2f6f3f2debfefd *build/vignette.rds
 d4bed48d3161db53b2492f6cf4d18f9f *data/gdm.RData
 8e01a09d1db584360c25402d3e968caa *inst/doc/gdmVignette.pdf
@@ -11,7 +11,7 @@ cfde88f15ed9d72064498584f7fe1fc3 *inst/extdata/stackedVars.grd
 c8e8f90a1647535438c26902d425d198 *man/formatsitepair.Rd
 d79fe49661acdf04e5c3f286ef8d81d2 *man/gdm-package.Rd
 ece5db2cfd93d7f959b339069a6d6268 *man/gdm.Rd
-a6df2a75fccd1e2e99a3a0a199c5493e *man/gdm.transform.Rd
+3a09ce5f677e8fa36b76f0451cede94d *man/gdm.transform.Rd
 cae3f6698f667a38636292f4ae85289a *man/gdmDissim.Rd
 905bba10fb75b1bab65c47166863745b *man/gdmExpData.Rd
 7cef92c679260f18f64ed4d0c182df7f *man/isplineExtract.Rd

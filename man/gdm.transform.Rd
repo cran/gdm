@@ -28,10 +28,6 @@ Ferrier S, Manion G, Elith J, Richardson, K (2007) Using generalized dissimilari
 Fitzpatrick MC, Keller SR (2015) Ecological genomics meets community-level modeling of biodiversity: Mapping the genomic landscape of current and future environmental adaptation. \emph{Ecology Letters} 18: 1-16
 }
 
-%% ~Make other sections like Warning with \section{Warning }{....} ~
-
-\seealso{\code{\link[gdm]{predict.gdm}}}
-
 \examples{
 load(system.file("./data/gdm.RData", package="gdm"))
 

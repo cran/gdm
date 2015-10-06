@@ -488,7 +488,7 @@ gdm.transform <- function (model, data){
   ##data = Either a raster object of prediction variables, needs to have the same 
   ##          variable as those used to fit the model, or a data frame
   #################
-  #model <- gdm.rast
+  #model <- fit2
   #data <- envRast
   #################
   options(warn.FPU = FALSE)
@@ -687,33 +687,33 @@ formatsitepair <- function(bioData, bioFormat, dist="bray", abundance=F,
   ##Output Variables:
   ##outTable = the fully calculated site-pair table for GDM
   ###########################
-  #bioData <- siteSpp
-  #bioFormat <- 1
-  #dist <- "bray"
-  #abundance <- T
-  #siteColumn <- "SITEYR"
-  #XColumn <- "utm18E"
-  #YColumn <- "utm18N"
-  #sppColumn <- NULL
-  #sppFilter <- 0
-  #abundColumn <- NULL
-  #predData <- rastStack
-  #distPreds <- NULL
-  #weightType <- "equal"
-  #custWeightVect <- NULL
-  #samples <- NULL
-  #################
-  #bioData <- sppData
+  #bioData <- sppTab
   #bioFormat <- 2
   #dist <- "bray"
-  #abundance <- T
+  #abundance <- F
   #siteColumn <- "site"
   #XColumn <- "Long"
   #YColumn <- "Lat"
   #sppColumn <- "species"
   #sppFilter <- 0
   #abundColumn <- NULL
-  #predData <- envTab
+  #predData <- envRast
+  #distPreds <- NULL
+  #weightType <- "custom"
+  #custWeightVect <- customWeights
+  #samples <- NULL
+  #################
+  #bioData <- occSite
+  #bioFormat <- 2
+  #dist <- "bray"
+  #abundance <- F
+  #siteColumn <- "site"
+  #XColumn <- "long"
+  #YColumn <- "lat"
+  #sppColumn <- "species"
+  #sppFilter <- 0
+  #abundColumn <- NULL
+  #predData <- climAll[[c(2,6)]]
   #distPreds <- NULL
   #weightType <- "equal"
   #custWeightVect <- NULL
@@ -750,6 +750,10 @@ formatsitepair <- function(bioData, bioFormat, dist="bray", abundance=F,
   ##makes sure a proper weightType is used
   if(weightType %in% c("equal", "richness", "custom")){} else{
     stop("Acceptable values for the weightType argument are: equal, richness, or custom")
+  }
+  ##if weightType == custom, makes sure a custWeightVect is attached
+  if(weightType=="custom" & is.null(custWeightVect)==T){
+    stop("custom weightType provided with no custWeightVect")
   }
   ##makes sure that a site column is provided when using table type 2 and raster environmental data
   if(bioFormat==2 & is.null(siteColumn)==T){
@@ -801,8 +805,8 @@ formatsitepair <- function(bioData, bioFormat, dist="bray", abundance=F,
     }
   }
   ##if a custom weight vector is provided, makes sure it is a vector
-  if(is.null(custWeightVect)==FALSE & class(custWeightVect)!="numeric"){
-    stop("argument custWeightVect needs to be a numeric data type")
+  if(is.null(custWeightVect)==FALSE & (class(custWeightVect)!="data.frame" & class(custWeightVect)!="matrix")){
+    stop("argument custWeightVect needs to be a data frame or matrix data type")
   }
   
   toRemove <- NULL
@@ -856,14 +860,29 @@ formatsitepair <- function(bioData, bioFormat, dist="bray", abundance=F,
       
       ##new to place extraction here
       rastEXDat <- as.data.frame(extract(predData, cellID$cellName))
-      predData <- cbind(cellID, locs, rastEXDat)
+      rastLocs <- as.data.frame(xyFromCell(predData, cellID$cellName))
+      colnames(rastLocs) <- c(XColumn, YColumn)
+      predData <- cbind(cellID, rastLocs, rastEXDat)
       predData <- predData[order(predData$cellName),]
       cellNameCol <- which(names(predData)=="cellName")
       predData <- aggregate(predData[,-siteNum], predData[cellNameCol], FUN=mean)
       
       ##aggregates bioData data into classes by raster cells
-      bioData <- cbind(cellID, bioData[-c(siteNum)])
-      bioData <- bioData[order(bioData$cellName),]
+      modDataTable <- cbind(cellID, bioData)
+      siteNum <- which(colnames(modDataTable)==siteColumn)
+      ##is custom weights selected, gives weight table new cell site names
+      if(weightType=="custom" & !is.null(custWeightVect)){
+        cellSiteNum <- which(colnames(modDataTable)=="cellName")
+        nameTab <- unique(cbind(modDataTable[siteNum], modDataTable[cellSiteNum]))
+        tempWeightTab <- merge(y=custWeightVect, x=nameTab, by=siteColumn)
+        modDataTable <- modDataTable[-siteNum]
+        siteNum <- which(colnames(tempWeightTab)==siteColumn)
+        custWeightVect <- tempWeightTab[-siteNum]
+      }else{
+        modDataTable <- modDataTable[-siteNum]
+      }
+      
+      bioData <- modDataTable[order(modDataTable$cellName),]
       siteNum <- which(colnames(bioData)=="cellName")
       if(abundance==T){
         bioData <- aggregate(bioData, bioData[cellNameCol], FUN=mean)
@@ -874,9 +893,10 @@ formatsitepair <- function(bioData, bioFormat, dist="bray", abundance=F,
         agLocs <- agLocs[,-siteNum]
         getRastCoords <- as.data.frame(xyFromCell(siteRaster, agLocs$cellName))
         bioData <- cbind(agLocs[siteNum], getRastCoords, agLocs[,-siteNum])
-        XColumn <- "x"
-        YColumn <- "y"
-        sppDat <- bioData[,-c(siteNum, x, y)]
+        xLoc <- which(names(bioData)=="x")
+        yLoc <- which(names(bioData)=="y")
+        colnames(bioData)[c(xLoc,yLoc)] <- c(XColumn, YColumn)
+        sppDat <- bioData[,-c(siteNum, xLoc, yLoc)]
       }
       
       ##filters out sites with low species count
@@ -905,11 +925,18 @@ formatsitepair <- function(bioData, bioFormat, dist="bray", abundance=F,
           removeRand <- fullLength[-(randRows)] 
           ##actual selection of the random rows to keep
           bioData <- bioData[c(randRows),]
-        } 
+        }
       }
       
       ##removes items by
-      predData <- predData[which(bioData$cellName %in% predData$cellName),]
+      predData <- predData[which(predData$cellName %in% bioData$cellName),]
+      ##sets up custom weights if needed
+      if(weightType=="custom" & !is.null(custWeightVect)){
+        custWeightVect <- custWeightVect[which(predData$cellName %in% custWeightVect$cellName),]
+        custWeightVect <- custWeightVect[order(custWeightVect$cellName),]
+        colnames(custWeightVect)[colnames(custWeightVect)=="cellName"] <- siteColumn
+      }
+      
       colnames(bioData)[colnames(bioData)=="cellName"] <- siteColumn
       colnames(predData)[colnames(predData)=="cellName"] <- siteColumn
       
@@ -958,7 +985,16 @@ formatsitepair <- function(bioData, bioFormat, dist="bray", abundance=F,
       colnames(predData)[colnames(predData)==siteColumn] <- "gettingCoolSiteColumn"
       ##extracts predData by only those in bioData
       predData <- unique(predData)
-      predData <- predData[which(bioData$gettingCoolSiteColumn %in% predData$gettingCoolSiteColumn),]
+      predData <- predData[which(predData$gettingCoolSiteColumn %in% bioData$gettingCoolSiteColumn),]
+      
+      ##sets up custom weights if needed
+      if(weightType=="custom" & !is.null(custWeightVect)){
+        colnames(custWeightVect)[colnames(custWeightVect)==siteColumn] <- "gettingCoolSiteColumn"
+        custWeightVect <- custWeightVect[which(predData$gettingCoolSiteColumn %in% custWeightVect[,"gettingCoolSiteColumn"]),]
+        custWeightVect <- custWeightVect[order(custWeightVect[,"gettingCoolSiteColumn"]),]
+        colnames(custWeightVect)[colnames(custWeightVect)=="gettingCoolSiteColumn"] <- siteColumn
+      }
+      
       ##rename for results
       colnames(bioData)[colnames(bioData)=="gettingCoolSiteColumn"] <- siteColumn
       colnames(predData)[colnames(predData)=="gettingCoolSiteColumn"] <- siteColumn
@@ -1011,33 +1047,40 @@ formatsitepair <- function(bioData, bioFormat, dist="bray", abundance=F,
       }
       
       ##if siteColumn has been provided....... now should always be true
-      if(!is.null(siteColumn)){
-        ##species site
-        spSiteCol <- bioData[siteColumn]
-        names(spSiteCol)[names(spSiteCol)==siteColumn] <- "siteIDn"
-        ##checks size, and if needed correcting
-        ##if cellID less than siteColumn
-        if(length(unique(cellID$cellName))<length(unique(spSiteCol$siteIDn))){
-          warning("One or more sites falls in the same raster cell. Using cells as sites instead")
-        }else if(length(unique(cellID$cellName))>length(unique(spSiteCol$siteIDn))){
-          ##if siteColumn less than cellID
-          warning("more unique cells identified than unique sites in site column, defaulting sites to cells")
-        }
-        ##removes unneeded columns
-        siteNum <- which(colnames(bioData)==siteColumn)
-        newDataTable <- bioData[-c(siteNum, x, y)]
-        headDat <- bioData[,c(siteNum)]
-      }else{
-        ##removes unneeded columns
-        newDataTable <- bioData[-c(x, y)]
+      ##species site
+      spSiteCol <- bioData[siteColumn]
+      names(spSiteCol)[names(spSiteCol)==siteColumn] <- "siteIDn"
+      ##checks size, and if needed correcting
+      ##if cellID less than siteColumn
+      if(length(unique(cellID$cellName))<length(unique(spSiteCol$siteIDn))){
+        warning("One or more sites falls in the same raster cell. Using cells as sites instead")
+      }else if(length(unique(cellID$cellName))>length(unique(spSiteCol$siteIDn))){
+        ##if siteColumn less than cellID
+        warning("more unique cells identified than unique sites in site column, defaulting sites to cells")
       }
-      
+      ##removes unneeded columns
+      newDataTable <- bioData[-c(x, y)]
+           
       ##new to place extraction here
       rastEXDat <- as.data.frame(extract(predData, cellID$cellName))
-      predData <- unique(cbind(cellID, locs, rastEXDat))
+      rastLocs <- as.data.frame(xyFromCell(predData, cellID$cellName))
+      colnames(rastLocs) <- c(XColumn, YColumn)
+      predData <- unique(cbind(cellID, rastLocs, rastEXDat))
       
       ##casts data into site-species matrix
       modDataTable <- cbind(cellID, newDataTable)
+      siteNum <- which(colnames(modDataTable)==siteColumn)
+      ##is custom weights selected, gives weight table new cell site names
+      if(weightType=="custom" & !is.null(custWeightVect)){
+        cellSiteNum <- which(colnames(modDataTable)=="cellName")
+        nameTab <- unique(cbind(modDataTable[siteNum], modDataTable[cellSiteNum]))
+        tempWeightTab <- merge(y=custWeightVect, x=nameTab, by=siteColumn)
+        modDataTable <- modDataTable[-siteNum]
+        siteNum <- which(colnames(tempWeightTab)==siteColumn)
+        custWeightVect <- tempWeightTab[-siteNum]
+      }else{
+        modDataTable <- modDataTable[-siteNum]
+      }
       names(modDataTable)[names(modDataTable)==sppColumn] <- "spcodeUltimateCoolness"
       castData <- dcast(modDataTable, cellName~spcodeUltimateCoolness, value.var=abundColumn)
       
@@ -1131,8 +1174,14 @@ formatsitepair <- function(bioData, bioFormat, dist="bray", abundance=F,
         transBio[transBio>=1] <- 1
         inDataTable <- transBio
       }
-      predData <- predData[which(bioData$cellName %in% predData$cellName),]
+      predData <- predData[which(predData$cellName %in% bioData$cellName),]
       predData <- predData[order(predData$cellName),]
+      ##sets up custom weights if needed
+      if(weightType=="custom" & !is.null(custWeightVect)){
+        custWeightVect <- custWeightVect[which(predData$cellName %in% custWeightVect$cellName),]
+        custWeightVect <- custWeightVect[order(custWeightVect$cellName),]
+        colnames(custWeightVect)[colnames(custWeightVect)=="cellName"] <- siteColumn
+      }
       colnames(bioData)[colnames(bioData)=="cellName"] <- siteColumn
       colnames(predData)[colnames(predData)=="cellName"] <- siteColumn
     }else{
@@ -1158,7 +1207,7 @@ formatsitepair <- function(bioData, bioFormat, dist="bray", abundance=F,
       ##filters out data
       filterBioDat <- subset(sppTotals, sppTotals["rowSums(sppDat)"] >= sppFilter)
       spSiteCol <- filterBioDat[siteName]
-      ##reassembles data after filtering
+      ##reassembles data after casting and filtering
       bioSiteCol <- which(names(bioData)==siteColumn)
       holdData <- bioData[c(bioSiteCol,x,y)]
       holdData <- aggregate(holdData, holdData[1], FUN=mean)
@@ -1182,14 +1231,22 @@ formatsitepair <- function(bioData, bioFormat, dist="bray", abundance=F,
         } 
       }
       
-      ##rename for comparisons
+      ##rename for comparisons, determines unique sites and reorders them
       colnames(predData)[colnames(predData)==siteColumn] <- "siteUltimateCoolness"
       predData <- unique(merge(siteXY, predData, by="siteUltimateCoolness"))
       predData <- predData[order(predData$siteUltimateCoolness),]
       bioData <- bioData[order(bioData$siteUltimateCoolness),]
       
       ##extracts predData by only those in bioData
-      predData <- predData[which(bioData$siteUltimateCoolness %in% predData$siteUltimateCoolness),]
+      predData <- predData[which(predData$siteUltimateCoolness %in% bioData$siteUltimateCoolness),]
+      
+      ##sets up custom weights if needed
+      if(weightType=="custom" & !is.null(custWeightVect)){
+        colnames(custWeightVect)[colnames(custWeightVect)==siteColumn] <- "siteUltimateCoolness"
+        custWeightVect <- custWeightVect[which(predData$siteUltimateCoolness %in% custWeightVect[,"siteUltimateCoolness"]),]
+        custWeightVect <- custWeightVect[order(custWeightVect[,"siteUltimateCoolness"]),]
+        colnames(custWeightVect)[colnames(custWeightVect)=="siteUltimateCoolness"] <- siteColumn
+      }
       
       ##rename for results
       colnames(bioData)[colnames(bioData)=="siteUltimateCoolness"] <- siteColumn
@@ -1384,7 +1441,7 @@ createsitepair <- function(dist, spdata, envInfo, dXCol, dYCol, siteCol,
   if(weightsType[1]=="equal"){
     weights <- rep(1, times=length(distance))
   }else if(weightsType[1]=="custom"){
-    weights <- custWeights
+    weights <- (custWeights[s1, "weights"] + custWeights[s2, "weights"]) / 2
   }else{
     weights <- (sppSiteSums[s1, "sppSums"] + sppSiteSums[s2, "sppSums"]) / richTotal
   }
@@ -1399,7 +1456,7 @@ createsitepair <- function(dist, spdata, envInfo, dXCol, dYCol, siteCol,
     }
     
     if(sum(checkTab>1)>0){
-      stop("A site has two or more unique entries of data associated with it. Double check you data for incosistancies.")
+      stop("A site has two or more unique entries of data associated with it. Double check data for incosistancies.")
     }
     s1.xCoord <- envInfo[s1, dXCol]
     s2.xCoord <- envInfo[s2, dXCol]
