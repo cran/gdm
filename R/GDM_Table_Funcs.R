@@ -3,7 +3,7 @@
 gdm <- function (data, geo=FALSE, splines=NULL, knots=NULL){
   #################
   #data<-gdmTab
-  #geo<-TRUE
+  #geo<-FALSE
   #splines<-NULL
   #knots<-NULL
   #################
@@ -62,14 +62,14 @@ gdm <- function (data, geo=FALSE, splines=NULL, knots=NULL){
   }
 
   ##setup the predictor name list
-  if(geo){
+  if(geo==TRUE){
     if(nPreds > 1){
       predlist <- c("Geographic", sapply(strsplit(names(data)[(LEADING_COLUMNS+1):(LEADING_COLUMNS+nPreds-1)], "s1."), "[[", 2))
     }else{
       predlist <- c("Geographic")
     }
   }else{
-    predlist <- sapply(strsplit(names(data)[(LEADING_COLUMNS+1):(LEADING_COLUMNS+nPreds-1)], "s1."), "[[", 2)
+    predlist <- sapply(strsplit(names(data)[(LEADING_COLUMNS+1):(LEADING_COLUMNS+nPreds)], "s1."), "[[", 2)
   }
 
   ##deal with the splines and knots

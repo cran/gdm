@@ -1,6 +1,6 @@
-9bb126738e376ad8f7dddf0ca167ab0c *DESCRIPTION
+c440e87f3760b518acb1ce95083ad1b0 *DESCRIPTION
 3eba3f8f481ce0c3ad5f6ba56d7dfc38 *NAMESPACE
-43c42bd965a6002b688293fceda53ca3 *R/GDM_Table_Funcs.R
+ee99719fd8373fc00eca18d7279fe698 *R/GDM_Table_Funcs.R
 e1a601aaaa161f6e8e2f6f3f2debfefd *build/vignette.rds
 d4bed48d3161db53b2492f6cf4d18f9f *data/gdm.RData
 8e01a09d1db584360c25402d3e968caa *inst/doc/gdmVignette.pdf
