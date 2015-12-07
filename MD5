@@ -1,6 +1,6 @@
-c440e87f3760b518acb1ce95083ad1b0 *DESCRIPTION
+fd7fcde66e0d2ad97502c9acbd298560 *DESCRIPTION
 3eba3f8f481ce0c3ad5f6ba56d7dfc38 *NAMESPACE
-ee99719fd8373fc00eca18d7279fe698 *R/GDM_Table_Funcs.R
+510a488b37acb70739b54e1b6a143251 *R/GDM_Table_Funcs.R
 e1a601aaaa161f6e8e2f6f3f2debfefd *build/vignette.rds
 d4bed48d3161db53b2492f6cf4d18f9f *data/gdm.RData
 8e01a09d1db584360c25402d3e968caa *inst/doc/gdmVignette.pdf
@@ -8,7 +8,7 @@ d4bed48d3161db53b2492f6cf4d18f9f *data/gdm.RData
 cfde88f15ed9d72064498584f7fe1fc3 *inst/extdata/stackedVars.grd
 6a9aa0cb8dd7ec61fd85644b583292d1 *inst/extdata/stackedVars.gri
 52060e05105b321e0da4e8fcb3c1295e *man/createsitepair.Rd
-c8e8f90a1647535438c26902d425d198 *man/formatsitepair.Rd
+01dd011842b1c1914099b74c39d8ac20 *man/formatsitepair.Rd
 d79fe49661acdf04e5c3f286ef8d81d2 *man/gdm-package.Rd
 ece5db2cfd93d7f959b339069a6d6268 *man/gdm.Rd
 3a09ce5f677e8fa36b76f0451cede94d *man/gdm.transform.Rd
@@ -16,7 +16,7 @@ cae3f6698f667a38636292f4ae85289a *man/gdmDissim.Rd
 905bba10fb75b1bab65c47166863745b *man/gdmExpData.Rd
 7cef92c679260f18f64ed4d0c182df7f *man/isplineExtract.Rd
 cf7448cc3c1f9019821d6edc0628045c *man/plot.gdm.Rd
-a247deb155f51ac792a74e0267ab5f7a *man/predict.gdm.Rd
+4d7586dee591adcb415d196b11012cc4 *man/predict.gdm.Rd
 48715bc452ab29f42075a3037ad8a1f7 *man/stackedVars.Rd
 6878e067d1110f7a11a9b1f12ab3686a *man/summary.gdm.Rd
 98045d8387d5fcba2b687f75258feb58 *src/GDM_Globals.h
