@@ -297,14 +297,19 @@ gdm <- function (data, geo=FALSE, splines=NULL, knots=NULL){
 ##########################################################################
 ##function to plot the splines of a gdm object
 plot.gdm <- function (x, plot.layout = c(2,2), plot.color = "blue", 
-                      plot.linewidth=2.0, ...){
+                      plot.linewidth=2.0, include.rug=FALSE, rug.sitepair=NULL, ...){
   #################
   ##lines used to quickly test function
   #x <- gdm.1
   #plot.layout <- c(2,2)
   #plot.color <- "green"
   #plot.linewidth <- 2.0
+  #include.rug <- T
+  #rug.sitepair <- gdmTab
   #################
+  ##checks to make sure that a site-pair table has been included
+  
+  
   options(warn.FPU = FALSE)
   PSAMPLE <- 200
   preddata <- rep(0,times=PSAMPLE)
@@ -323,7 +328,7 @@ plot.gdm <- function (x, plot.layout = c(2,2), plot.color = "blue",
   points(x$ecological, x$observed, pch=20, cex=0.25, col=plot.color)
   overlayX <- seq( from=min(x$ecological), to=max(x$ecological), length=PSAMPLE )
   overlayY <- 1 - exp( - overlayX )
-  lines( overlayX, overlayY, lwd=plot.linewidth ) 
+  lines( overlayX, overlayY, lwd=plot.linewidth )
   thisplot <- thisplot + 1
   
   ##determines rather or not to put mulitiple plots on one page or not
@@ -367,7 +372,7 @@ plot.gdm <- function (x, plot.layout = c(2,2), plot.color = "blue",
   ##plot the predictors with non-zero sum of coefficients      
   splineindex <- 1
   for(i in 1:preds){  
-    #i <- 1
+    #i <- 2
     ##only if the sum of the coefficients associated with this predictor is > 0.....
     numsplines <- x$splines[i]
     if(sum(x$coefficients[splineindex:(splineindex+numsplines-1)]) > 0){
@@ -397,12 +402,24 @@ plot.gdm <- function (x, plot.layout = c(2,2), plot.color = "blue",
       
       if(x$geo & i==1){
         varNam <- "Geographic Distance"
+        ##calculates rug plot data
+        if(include.rug==TRUE){
+          rugData <- unique(sqrt(((rug.sitepair$s1.xCoord-rug.sitepair$s2.xCoord)^2)+((rug.sitepair$s1.yCoord-rug.sitepair$s2.yCoord)^2)))
+        }
       } else{
         varNam <- x$predictors[i]
+        ##gets rug plot data
+        if(include.rug==TRUE){
+          varDat <- grep(varNam, colnames(rug.sitepair))
+          rugData <- unique(c(rug.sitepair[,c(varDat[1])], rug.sitepair[,c(varDat[2])]))
+        }
       }
       
       plot(seq(from=x$knots[[(i*3)-2]],to=x$knots[[(i*3)]], length=PSAMPLE), z$pdata, 
            xlab=varNam, ylab=paste("f(", varNam, ")", sep="" ), ylim=c(0,predmax), type="l")
+      if(include.rug==TRUE){
+        rug(rugData)
+      }
     }
     ##update the spline index
     splineindex <- splineindex + numsplines
@@ -503,8 +520,8 @@ predict.gdm <- function (object, data, time=FALSE, predRasts=NULL, ...){
 gdm.transform <- function (model, data){
   #################
   ##lines used to quickly test function
-  #model <- fit2
-  #data <- envRast
+  #model <- gdmRastMod 
+  #data <- envStack
   #################
   options(warn.FPU = FALSE)
   rastDat <- NULL
@@ -530,6 +547,14 @@ gdm.transform <- function (model, data){
     data <- rasterToPoints(rastDat)
     ##determines the cell number of the xy coordinates
     rastCells <- cellFromXY(rastDat, xy=data[,1:2]) 
+    
+    ##checks for NA in the 
+    checkNAs <- as.data.frame(which(is.na(data), arr.ind=T))
+    if(nrow(checkNAs)>0){
+      warning("After extracting raster data, NAs found from one or more layers. Removing NAs from data object to be transformed.")
+      data <- na.omit(data)
+      rastCells <- rastCells[-c(checkNAs$row)]
+    }
     
     ##if geo was not T in the model, removes the coordinates from the data frame
     if(geo==FALSE){
@@ -584,19 +609,20 @@ gdm.transform <- function (model, data){
   ##if wanted output data as raster, provides maps raster, or output table
   if(class(dataCheck)=="RasterStack" | class(dataCheck)=="RasterLayer" | class(dataCheck)=="RasterBrick"){
     ##maps the transformed data back to the input rasters
-    rastLay = rastDat[[1]]
-    outputRasts = stack()
+    rastLay <- rastDat[[1]]
+    rastLay[] <- NA
+    outputRasts <- stack()
     for(nn in 1:ncol(fullTrans)){
       #print(nn)
       #nn=3
-      rastLay[rastCells] = fullTrans[,nn]
-      outputRasts = stack(outputRasts, rastLay)
+      rastLay[rastCells] <- fullTrans[,nn]
+      outputRasts <- stack(outputRasts, rastLay)
     }
     ##renames raster layers to be the same as the input
     if(geo){
-      names(outputRasts) = c("x", "y", names(rastDat))
+      names(outputRasts) <- c("x", "y", names(rastDat))
     } else {
-      names(outputRasts) = names(rastDat)
+      names(outputRasts) <- names(rastDat)
     }
     
     ##get the predictors with non-zero sum of coefficients      

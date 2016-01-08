@@ -1,8 +1,8 @@
 //
 // Gdm4Rlib.h
 //
-#ifndef	__GDM4RLIB_H__
-#define	__GDM4RLIB_H__
+#ifndef	__GDMLIB_H__
+#define	__GDMLIB_H__
 
 #include "stdafx.h"
 

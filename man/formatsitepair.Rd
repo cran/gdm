@@ -109,7 +109,7 @@ envTab <- gdmExpData[c(2:ncol(gdmExpData))]
 
 #########table type 1
 ##site-species table without coordinates
-testData1a <- dcast(sppData, site~species)
+testData1a <- reshape2::dcast(sppData, site~species)
 ##site-species table with coordinates
 coords <- unique(sppData[2:ncol(sppData)])
 testData1b <- merge(testData1a, coords, by="site")
