@@ -4,13 +4,13 @@
 gdm <- function (data, geo=FALSE, splines=NULL, knots=NULL){
   #################
   ##lines used to quickly test function
-  #data<-gdmTab
-  #geo<-FALSE
-  #splines<-NULL
-  #knots<-NULL
+  #data<-table
+  #geo<-F
+  #splines<-gdmSplines
+  #knots<-gdmKnots
   #################
   options(warn.FPU = FALSE)
-    
+  
   ##adds error checking to gdm function
   ##checks to see if in site-pair format from formatsitepair function
   if(class(data)[1] != "gdmData"){
@@ -20,7 +20,7 @@ gdm <- function (data, geo=FALSE, splines=NULL, knots=NULL){
   if(!(class(data)[1]=="gdmData" | class(data)[1]=="matrix" | class(data)[1]=="data.frame")){
     stop("data argument needs to be a matrix or a data frame")
   }
-    
+  
   ##sanity check on the data table
   if(ncol(data) < 6){
     stop("Not enough columns in data. (Minimum need: Observed, weights, X0, Y0, X1, Y1)")
@@ -28,7 +28,7 @@ gdm <- function (data, geo=FALSE, splines=NULL, knots=NULL){
   if(nrow(data) < 1){
     stop("Not enough rows in data")
   }
-    
+  
   ##checks that geo has either TRUE or FALSE
   if(!(geo==TRUE | geo==FALSE)){
     stop("geo argument must be either TRUE or FALSE")
@@ -41,7 +41,7 @@ gdm <- function (data, geo=FALSE, splines=NULL, knots=NULL){
   if(is.null(knots)==FALSE & class(knots)!="numeric"){
     stop("argument knots needs to be a numeric data type")
   }
-    
+  
   ##check that the response data is [0..1]
   rtmp <- data[,1]
   if(length(rtmp[rtmp<0]) > 0){
@@ -50,11 +50,11 @@ gdm <- function (data, geo=FALSE, splines=NULL, knots=NULL){
   if (length(rtmp[rtmp>1]) > 0){
     stop("Response data has values greater than 1. Must be between 0 - 1.")
   }
-
+  
   ##current data format is response,weights,X0,Y0,X1,Y1 before any predictor data (thus 6 leading columns)
   LEADING_COLUMNS <- 6
   if(geo){
-    nPreds <- ( ncol(data) - LEADING_COLUMNS ) / 2 + 1		
+    nPreds <- ( ncol(data) - LEADING_COLUMNS ) / 2 + 1  	
   }else{
     nPreds <- ( ncol(data) - LEADING_COLUMNS ) / 2
   }
@@ -63,7 +63,7 @@ gdm <- function (data, geo=FALSE, splines=NULL, knots=NULL){
   if(nPreds < 1){
     stop("Data has NO predictors")
   }
-
+  
   ##setup the predictor name list, and removes the "s1." and "s2." to make resulting names more intuitive
   if(geo==TRUE){
     if(nPreds > 1){
@@ -72,9 +72,9 @@ gdm <- function (data, geo=FALSE, splines=NULL, knots=NULL){
       predlist <- c("Geographic")
     }
   }else{
-    predlist <- sapply(strsplit(names(data)[(LEADING_COLUMNS+1):(LEADING_COLUMNS+nPreds-1)], "s1."), "[[", 2)
+    predlist <- sapply(strsplit(names(data)[(LEADING_COLUMNS+1):(LEADING_COLUMNS+nPreds)], "s1."), "[[", 2)
   }
-
+  
   ##deal with the splines and knots
   if(is.null(knots)){
     ##generate knots internally from the data
@@ -82,14 +82,14 @@ gdm <- function (data, geo=FALSE, splines=NULL, knots=NULL){
       nSplines <- 3
       quantvec <- rep(0, nPreds * nSplines)
       splinvec <- rep(nSplines, nPreds)
-        
+      
       if(geo==TRUE){
         ##get knots for the geographic distance
         v <- sqrt((data[,3]-data[,5])^2 + (data[,4]-data[,6])^2)
         quantvec[1] <- min(v)
         quantvec[2] <- median(v)
         quantvec[3] <- max(v)
-          
+        
         if(nPreds > 1){
           ##get knots for the environmental predictors
           for(i in seq(from = 1, to = nPreds-1, by = 1)){
@@ -114,23 +114,23 @@ gdm <- function (data, geo=FALSE, splines=NULL, knots=NULL){
       ##otherwise check that the supplied splines vector has enough data and minumum spline values of 3
       if(length(splines) != nPreds){
         stop(paste("Number of splines does not equal the number of predictors. 
-              Splines argument has", length(splines), "items but needs", nPreds, "items."))
+                   Splines argument has", length(splines), "items but needs", nPreds, "items."))
       }
-        
+      
       ##count the total number of user defined splines to dimension the knots vector
       quantvec <- rep(0, sum(splines))
       splinvec <- splines
-        
+      
       if(geo==T){
         if(splines[1] < 3){
           stop("Must have at least 3 splines per predictor")
         }
-          
+        
         ## get knots for the geographic distance
         v <- sqrt((data[,3]-data[,5])^2 + (data[,4]-data[,6])^2)
         quantvec[1] <- min(v)		## 0% knot
         quantvec[splines[1]] <- max(v)	## 100% knot
-          
+        
         quant_increment <- 1.0 / (splines[1]-1)
         this_increment <- 1
         for (i in seq(from = 2, to = (splines[1]-1), by = 1)){  
@@ -138,7 +138,7 @@ gdm <- function (data, geo=FALSE, splines=NULL, knots=NULL){
           quantvec[i] <- quantile(v,quant_increment*this_increment)
           this_increment <- this_increment + 1
         }
-          
+        
         if(nPreds > 1){
           ##get knots for the environmental predictors
           current_quant_index <- splines[1]
@@ -147,11 +147,11 @@ gdm <- function (data, geo=FALSE, splines=NULL, knots=NULL){
             if(num_splines < 3){
               stop("Must have at least 3 splines per predictor")
             }
-                
+            
             v <- c(data[,i+LEADING_COLUMNS], data[,i+LEADING_COLUMNS+nPreds-1])                 
             quantvec[current_quant_index+1] <- min(v)	            ## 0% knot
             quantvec[current_quant_index+num_splines] <- max(v)	    ## 100% knot
-              
+            
             quant_increment <- 1.0 / (num_splines-1)
             this_increment <- 1
             for(i in seq(from = 2, to = (num_splines-1), by = 1)){  
@@ -159,7 +159,7 @@ gdm <- function (data, geo=FALSE, splines=NULL, knots=NULL){
               quantvec[current_quant_index+i] <- quantile(v,quant_increment*this_increment)
               this_increment <- this_increment + 1
             }
-              
+            
             current_quant_index <- current_quant_index + num_splines
           }
         }
@@ -171,11 +171,11 @@ gdm <- function (data, geo=FALSE, splines=NULL, knots=NULL){
           if(num_splines < 3){
             stop("Must have at least 3 splines per predictor")
           }
-              
+          
           v <- c(data[,i+LEADING_COLUMNS], data[,i+LEADING_COLUMNS+nPreds])          
           quantvec[current_quant_index+1] <- min(v)	        ## 0% knot
           quantvec[current_quant_index+num_splines] <- max(v)	## 100% knot
-            
+          
           quant_increment <- 1.0 / (num_splines-1)
           this_increment <- 1
           for(i in seq(from = 2, to = (num_splines-1), by = 1)){  
@@ -186,7 +186,7 @@ gdm <- function (data, geo=FALSE, splines=NULL, knots=NULL){
           current_quant_index <- current_quant_index + num_splines
         }
       }
-    }
+      }
   }else{
     ##user defined knots supplied as an argument
     if(is.null(splines)){
@@ -194,17 +194,17 @@ gdm <- function (data, geo=FALSE, splines=NULL, knots=NULL){
       if(length(knots) != (nPreds * 3)){
         stop(paste("When knots are supplied by the user, there should be", (nPreds * 3), "items in the knots argument, not", length(knots), "items."))
       }
-        
+      
       ## now check that each of the three knots for each predictor are in ascending order
       for(i in seq(from = 1, to = nPreds, by = 1)){
         index = i * 3
         if((knots[index-1] < knots[index-2]) || 
-            (knots[index] < knots[index-2]) || 
-            (knots[index] < knots[index-1])){
+             (knots[index] < knots[index-2]) || 
+             (knots[index] < knots[index-1])){
           stop(paste("Knots for ", predlist[i], "are not in ascending order."))
         }
       }
-        
+      
       nSplines <- 3
       quantvec <- knots
       splinvec <- rep(nSplines, nPreds)
@@ -213,7 +213,7 @@ gdm <- function (data, geo=FALSE, splines=NULL, knots=NULL){
       if(length(knots) != sum(splines)){
         stop(paste("When knots are supplied by the user, there should be", sum(splines), "items in the knots argument, not", length(knots), "items."))
       }
-        
+      
       ##now check that each of the knots for each predictor are in ascending order
       index = 0
       for(i in seq(from = 1, to = nPreds, by = 1)){
@@ -224,12 +224,12 @@ gdm <- function (data, geo=FALSE, splines=NULL, knots=NULL){
         }
         index <- index + splines[i]
       }
-        
+      
       quantvec <- knots
       splinvec <- splines
     }
   }
-    
+  
   p1 <- 0
   p2 <- 0
   p3 <- 0
@@ -238,45 +238,45 @@ gdm <- function (data, geo=FALSE, splines=NULL, knots=NULL){
   p6 <- rep(0,times=nrow(data))
   p7 <- rep(0,times=nrow(data))
   p8 <- rep(0,times=nrow(data))
-
+  
   ##Call the dll function, fitting the gdm model
   z <- .C( "GDM_FitFromTable",
-            paste(getwd()),
-            as.matrix(data),
-            as.integer(geo),
-            as.integer(nPreds), 
-            as.integer(nrow(data)), 
-            as.integer(ncol(data)),
-            as.integer(splinvec),
-            as.double(quantvec),                 
-            gdmdev = as.double(p1),
-            nulldev = as.double(p2),
-            expdev = as.double(p3),
-            intercept = as.double(p4),         
-            coeffs = as.double(p5),
-            response = as.double(p6),
-            preddata = as.double(p7),
-            ecodist = as.double(p8), 
-            PACKAGE = "gdm")
-    
+           paste(getwd()),
+           as.matrix(data),
+           as.integer(geo),
+           as.integer(nPreds), 
+           as.integer(nrow(data)), 
+           as.integer(ncol(data)),
+           as.integer(splinvec),
+           as.double(quantvec),                 
+           gdmdev = as.double(p1),
+           nulldev = as.double(p2),
+           expdev = as.double(p3),
+           intercept = as.double(p4),         
+           coeffs = as.double(p5),
+           response = as.double(p6),
+           preddata = as.double(p7),
+           ecodist = as.double(p8), 
+           PACKAGE = "gdm")
+  
   m <- match.call(expand.dots = F)
   
   ##creates the gdm object, and fills its parts
   gdmModOb <- structure(list(dataname = m[[2]],
-                              geo = geo,
-                              sample = nrow(data),
-                              gdmdeviance = z$gdmdev,
-                              nulldeviance = z$nulldev,
-                              explained = z$expdev,
-                              intercept = z$intercept,
-                              predictors = predlist,
-                              coefficients = z$coeffs,
-                              knots = quantvec,
-                              splines = splinvec,
-                              creationdate = date(),
-                              observed = z$response,
-                              predicted = z$preddata,
-                              ecological = z$ecodist))
+                             geo = geo,
+                             sample = nrow(data),
+                             gdmdeviance = z$gdmdev,
+                             nulldeviance = z$nulldev,
+                             explained = z$expdev,
+                             intercept = z$intercept,
+                             predictors = predlist,
+                             coefficients = z$coeffs,
+                             knots = quantvec,
+                             splines = splinvec,
+                             creationdate = date(),
+                             observed = z$response,
+                             predicted = z$preddata,
+                             ecological = z$ecodist))
   ##sets gdm object class  
   class(gdmModOb) <- c("gdm", "list")
   

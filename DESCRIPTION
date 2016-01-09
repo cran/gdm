@@ -1,7 +1,7 @@
 Package: gdm
 Type: Package
 Title: Functions for Generalized Dissimilarity Modeling
-Version: 1.1.6
+Version: 1.1.7
 Date: 2015-01-08
 Author: Glenn Manion, Matthew Lisk, Simon Ferrier, Diego Nieto-Lugilde, Matthew C. Fitzpatrick 
 Maintainer: Matthew C. Fitzpatrick <mfitzpatrick@al.umces.edu>
@@ -12,7 +12,7 @@ LinkingTo: Rcpp
 Imports:
 Suggests: R.rsp
 VignetteBuilder: R.rsp
-Packaged: 2016-01-08 14:34:44 UTC; mlisk
+Packaged: 2016-01-08 18:25:06 UTC; mlisk
 NeedsCompilation: yes
 Repository: CRAN
-Date/Publication: 2016-01-08 16:28:47
+Date/Publication: 2016-01-09 16:14:18
