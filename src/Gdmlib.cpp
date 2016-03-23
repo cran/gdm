@@ -9,9 +9,8 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-//#include <Rcpp.h>
 #include <math.h>
-//#include <iostream>
+#include <iostream>
 //#include <unistd.h>
 
 //#ifdef _WIN32
@@ -107,7 +106,8 @@ void GDM_FitFromTable(char **wspath,
 	//
 	// Write a binary file image of the predictor matrix
 	//
-	char lpTmpFile[256];	
+	char lpTmpFile[256];
+	char fullFile[256];
 	char *s;
 	s = tmpnam(NULL);
 	
@@ -116,15 +116,10 @@ void GDM_FitFromTable(char **wspath,
 	char *cbin = new char[bin.length() + 1];
 	strcpy(cbin, bin.c_str());
 	
-	//creates full file name
-	char fullFile[256];
 	strncpy(fullFile, s, sizeof(fullFile));
 	strncat(fullFile, cbin, sizeof(fullFile));
 	
 	sprintf(lpTmpFile, "%s/%s", *wspath, fullFile );
-	
-	//Rprintf("Created Temporary File");
-	//Rcpp::print("Created Temporary File");
 	
 	int h = _open( lpTmpFile, _O_BINARY | _O_CREAT | _O_TRUNC | _O_RDWR, S_IREAD | S_IWRITE );
 	if ( h < 0 )
@@ -883,8 +878,21 @@ void GDM_FitFromTable(char **wspath,
 	//
 	// Write a binary file image of the predictor matrix
 	//
-	char lpTmpFile[256];		
-	sprintf(lpTmpFile, "%s/%s", *wspath, "gdmtmp.bin" );
+	char lpTmpFile[256];
+	char fullFile[256];
+	char *s;
+	s = tmpnam(NULL);
+	
+	//file extension
+	std::string bin = ".bin";
+	char *cbin = new char[bin.length() + 1];
+	strcpy(cbin, bin.c_str());
+	
+	strncpy(fullFile, s, sizeof(fullFile));
+	strncat(fullFile, cbin, sizeof(fullFile));
+	
+	sprintf(lpTmpFile, "%s/%s", *wspath, fullFile );
+	
 	int h = _open( lpTmpFile, _O_BINARY | _O_CREAT | _O_TRUNC | _O_RDWR, S_IREAD | S_IWRITE );
 	if ( h < 0 )
 	{
@@ -1638,8 +1646,20 @@ void GDM_FitFromTable(char **wspath,
 	//
 	// Write a binary file image of the predictor matrix
 	//
-	char lpTmpFile[256];		
-	sprintf(lpTmpFile, "%s/%s", *wspath, "gdmtmp.bin" );
+	char lpTmpFile[256];
+	char *s;
+	char *dir = *wspath;
+	char *headFile = "gdmTemp";
+	s = tempnam(dir, headFile);
+	
+	//file extension
+	std::string bin = ".bin";
+	char *cbin = new char[bin.length() + 1];
+	strcpy(cbin, bin.c_str());
+	
+	strncpy(lpTmpFile, s, sizeof(lpTmpFile));
+	strncat(lpTmpFile, cbin, sizeof(lpTmpFile));
+	
 	int h = creat( lpTmpFile, PERMS );
 	if ( h < 0 )
 	{
