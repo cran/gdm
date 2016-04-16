@@ -67,7 +67,7 @@ sitePairTab <- formatsitepair(sppData, 2, XColumn="Long", YColumn="Lat", sppColu
 
 ## not run
 #modTest <- gdm.varImp(sitePairTab, geo=T, nPerm=50, parallel=T, cores=10)
-#barplot(modTest[[2]][,1])
+#barplot(sort(modTest[[2]][,1], decreasing=T))
 
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the

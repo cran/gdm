@@ -327,7 +327,7 @@ plot.gdm <- function (x, plot.layout = c(2,2), plot.color = "blue",
   }
   
   ##plots the compositional dissimilarity spline plot
-  plot(x$ecological, x$observed, xlab="Predicted Ecological Distance", ylab="Observed Compositional Dissimilarity", type="n")
+  plot(x$ecological, x$observed, xlab="Predicted Ecological Distance", ylab="Observed Compositional Dissimilarity", type="n", ylim=c(0,1))
   points(x$ecological, x$observed, pch=20, cex=0.25, col=plot.color)
   overlayX <- seq( from=min(x$ecological), to=max(x$ecological), length=PSAMPLE )
   overlayY <- 1 - exp( - overlayX )
@@ -340,7 +340,7 @@ plot.gdm <- function (x, plot.layout = c(2,2), plot.color = "blue",
     dev.next()
   }
   ##plots the second compositional dissimilarity spline plot
-  plot(x$predicted, x$observed, xlab="Predicted Compositional Dissimilarity", ylab="Observed Compositional Dissimilarity", type="n")
+  plot(x$predicted, x$observed, xlab="Predicted Compositional Dissimilarity", ylab="Observed Compositional Dissimilarity", type="n", ylim=c(0,1))
   points( x$predicted, x$observed, pch=20, cex=0.25, col=plot.color )
   overlayX <- overlayY <- seq( from=min(x$predicted), to=max(x$predicted), length=PSAMPLE )
   lines( overlayX, overlayY, lwd=plot.linewidth ) 
@@ -796,13 +796,13 @@ formatsitepair <- function(bioData, bioFormat, dist="bray", abundance=FALSE,
   ##if samples is not a number, then exit function
   if(is.null(samples)==FALSE){
     if(is.numeric(samples)==FALSE | samples<0){
-      stop("samples argument must be a positive integer number")
+      stop("samples argument must be a positive integer")
     }
   }
   
   ##makes sure that sppFilter is a number, if not exit function
   if((is.numeric(sppFilter)==FALSE & is.null(sppFilter)==FALSE) | sppFilter<0){
-    stop("sppFilter argument must be a positive integer number")
+    stop("sppFilter argument must be a positive integer")
   }
   ##makes sure a proper weightType is used
   if(weightType %in% c("equal", "richness", "custom")){} else{
@@ -859,7 +859,7 @@ formatsitepair <- function(bioData, bioFormat, dist="bray", abundance=FALSE,
     if(weightType=="richness"){
       stop("Cannot weight by site richness when supplying the biological data as a distance matrix.")
     }else if(nrow(bioData)!=(ncol(bioData)-1)){
-      stop("Biological dissimularity has differing number of rows to number of columns, and therefore is not a true dissimularity matrix")
+      stop("Biological dissimilarity has differing number of rows to number of columns. Did you forget to add a column for site ID's?")
     }
   }
   
@@ -937,7 +937,7 @@ formatsitepair <- function(bioData, bioFormat, dist="bray", abundance=FALSE,
       colnames(cellID)[which(colnames(cellID)=="cellFromXY(predData, locs)")] <- "cellName"
       ##if none of the points intersected with the prediction raster
       if(nrow(cellID)==sum(is.na(cellID$cellName))){
-        stop("None of the given points intersect with the given raster data. Double check that you geography is correct and that the given XColumn and YColumn values are correct.")
+        stop("None of the given points intersect with the given raster data. Double check that your geography is correct and that the given XColumn and YColumn values are correct.")
       }
       cellLocs <- as.data.frame(xyFromCell(predData, cellID$cellName))
       ##temporarily keeps old site in to identify what to remove from other objects
@@ -987,6 +987,7 @@ formatsitepair <- function(bioData, bioFormat, dist="bray", abundance=FALSE,
     ##totals the number of species per site
     sppDat[sppDat>=1] <- 1
     sppDat[sppDat==0] <- 0
+    sppDat[is.na(sppDat)] <- 0
     sppTotals <- cbind(as.data.frame(bioData[siteCol]), apply(sppDat, 1, function(m){sum(as.numeric(m))}))
     ##filters out sites with less species than filter
     filterBioDat <- subset(sppTotals, sppTotals[colnames(sppTotals)[2]] >= sppFilter)
@@ -998,7 +999,7 @@ formatsitepair <- function(bioData, bioFormat, dist="bray", abundance=FALSE,
     ##removes random sampling of sites
     if(is.null(samples)==FALSE){
       if(nrow(bioData)<samples){
-        warning("After species filter, fewer remaining records remaining than specified in samples, continuing without farther removals")
+        warning("After species filter, fewer records remaining than specified in samples, continuing without subsampling")
       }else{
         fullSites <- bioData[,siteCol]
         randRows <- sample(1:nrow(bioData), samples)
@@ -1035,17 +1036,19 @@ formatsitepair <- function(bioData, bioFormat, dist="bray", abundance=FALSE,
     predData <- predData[order(predData[,predSite]),]
     bioData <- bioData[order(bioData[,bioSite]),]
     
-    ##sets up species data for calculating dissimularity
+    ##sets up species data for calculating dissimilarity
     bx <- which(names(bioData)==XColumn)
     by <- which(names(bioData)==YColumn)
     sppData <- bioData[-c(bioSite, bx, by)]
     
     ##creates distance matrix
     if(abundance==F){
-      sppDat[sppDat>=1] <- 1
-      sppDat[sppDat==0] <- 0
+      sppData[sppData>=1] <- 1
+      sppData[sppData==0] <- 0
+      sppData[is.na(sppData)] <- 0
       distData <- vegan::vegdist(sppData, dist, binary=T)
     }else{
+      sppData[is.na(sppData)] <- 0
       distData <- vegan::vegdist(sppData, dist, binary=F)
     }
     
@@ -1092,19 +1095,19 @@ formatsitepair <- function(bioData, bioFormat, dist="bray", abundance=FALSE,
     ##checks to size of each dissimilarity matrix, to make sure they are all the same
     lapply(distPreds, function(mat, mat1){
       if((dim(mat1)[1]!=dim(mat)[1]) & (dim(mat1)[2]!=dim(mat)[2])){
-        stop("The dimensions of your predictions matrices are not the same size.")
+        stop("The dimensions of your predictor matrices are not the same.")
       }
     }, mat1=baseMat)
-    print(dim(baseMat))
+    #print(dim(baseMat))
     
     ##hold site columns
     holdSiteCols <- lapply(distPreds, function(dP){dP[,which(siteColumn %in% colnames(dP))]})
     #remove site column from matrices
     distPreds <- lapply(distPreds, function(dP){dP[,-which(siteColumn %in% colnames(dP))]})
-    print(dim(distPreds[[1]]))
+    #print(dim(distPreds[[1]]))
     ##orders the distance matices of distPreds
     distPreds <- mapply(function(dP, hSC){as.matrix(as.dist(dP[order(hSC),order(hSC)]))}, dP=distPreds, hSC=holdSiteCols, SIMPLIFY=FALSE)
-    print(dim(distPreds[[1]]))
+    #print(dim(distPreds[[1]]))
     ##orders the site columns to match the distance matrices
     orderSiteCols <- lapply(holdSiteCols, function(hSC){hSC[order(hSC)]})
 
@@ -1117,15 +1120,15 @@ formatsitepair <- function(bioData, bioFormat, dist="bray", abundance=FALSE,
     }
     ##set new baseMat
     baseMat <- distPreds[[1]]
-    print(dim(baseMat))
+    #print(dim(baseMat))
     
     ##checks the size of the dissimilarity matrices against the size of distData
     baseMatDat <- lower.tri(as.matrix(baseMat),diag=FALSE)
     baseMatDat <- as.vector(baseMat[baseMatDat])  
-    print(nrow(outTable))
-    print(length(baseMatDat))
+    #print(nrow(outTable))
+    #print(length(baseMatDat))
     if(nrow(outTable)!=length(baseMatDat)){
-      stop("The dimensions of the distance predictor matrices do not match the biological data")
+      stop("The dimensions of the distance predictor matrices do not match the biological data.")
     }
     
     ##addes any associated distance predictors to the sitepair table
@@ -1235,7 +1238,7 @@ createsitepair <- function(dist, spdata, envInfo, dXCol, dYCol, siteCol,
     }
     
     if(sum(checkTab>1)>0){
-      stop("A site has two or more unique entries of data associated with it. Double check data for incosistancies.")
+      stop("A site has two or more unique entries of data associated with it. Check data for issues.")
     }
     s1.xCoord <- envInfo[s1, dXCol]
     s2.xCoord <- envInfo[s2, dXCol]
@@ -1247,7 +1250,7 @@ createsitepair <- function(dist, spdata, envInfo, dXCol, dYCol, siteCol,
     s1.yCoord <- spdata[s1, dYCol]
     s2.yCoord <- spdata[s2, dYCol]
   }else{
-    stop("X,Y Coordinates not found with unique sites, unable to complete site-pair table")
+    stop("X,Y Coordinates not found with unique sites, unable to build site-pair table")
   }
   
   ##sets up output table
@@ -1630,12 +1633,14 @@ gdm.varImp <- function(spTable, geo, splines=NULL, knots=NULL, fullModelOnly=FAL
   ##function to test the signifiance of the various variables of a gdm site-pair table
   #################
   #spTable <- sitePairTab          ##the input site-pair table to subsample from
+  #load("M:/UAE/kavyaWorking/Code/GDM/GDMSitepairTable.RData")
+  #spTable <- gdmSitea
   #geo <- T              ##rather or not the gdm model takes geography into account, see gdm
   #splines <- NULL       ##splines gdm setting, see gdm
   #knots <- NULL         ##knots gdm setting, see gdm
   #fullModelOnly <- F         ##not sure about this argument, acceptable values are TRUE and FALSE
-  #nPerm <- 50
-  #parallel <- F
+  #nPerm <- 2
+  #parallel <- T
   #cores <- 2
   #################
   ##things to be examined later
@@ -1721,7 +1726,7 @@ gdm.varImp <- function(spTable, geo, splines=NULL, knots=NULL, fullModelOnly=FAL
   currSitePair <- spTable
   
   for(v in 1:nVars){
-    #v <- 11
+    #v <- 2
     print(varNames[v])
 
     ##runs gdm, first time on full site-pair table
@@ -1740,7 +1745,7 @@ gdm.varImp <- function(spTable, geo, splines=NULL, knots=NULL, fullModelOnly=FAL
       permSitePairs <- foreach(k=1:nPerm, .verbose=F, .packages=c("gdm"), .export=c("permutateSitePair")) %dopar%
         permutateSitePair(currSitePair, siteData, indexTab, varNames)
       
-      permGDM <- try(foreach(k=1:length(permSitePairs), .verbose=T, .packages=c("gdm")) %dopar%
+      permGDM <- try(foreach(k=1:length(permSitePairs), .verbose=F, .packages=c("gdm")) %dopar%
                        gdm(permSitePairs[[k]], geo=geo, splines=NULL, knots=NULL))
       ##closes cores
       stopCluster(cl)
@@ -1797,11 +1802,12 @@ gdm.varImp <- function(spTable, geo, splines=NULL, knots=NULL, fullModelOnly=FAL
     
     ##now tests all other variables 
     for(varChar in varNames){
-      #varChar <- varNames[1]
+      #varChar <- varNames[2]
       if(varChar!="Geographic"){
         ##select variable columns to be removed from original site-pair table
-        testVarCol <- grep(varChar, colnames(currSitePair))
-        testSitePair <- currSitePair[,-c(testVarCol)]
+        testVarCols1 <- grep(paste("^s1.", varChar, "$", sep=""), colnames(currSitePair))
+        testVarCols2 <- grep(paste("^s2.", varChar, "$", sep=""), colnames(currSitePair))
+        testSitePair <- currSitePair[,-c(testVarCols1, testVarCols2)]
         ##run gdm for the missing variable
         noVarGDM <- gdm(testSitePair, geo=geo, splines=NULL, knots=NULL)
         
@@ -1862,11 +1868,13 @@ gdm.varImp <- function(spTable, geo, splines=NULL, knots=NULL, fullModelOnly=FAL
     }else{
       ##removes any non-geo variable
       nameToRemove <- varNames[varToOmit]
+      #nameToRemove <- "bio1"
       ##remove from variables
       varNames <- varNames[-varToOmit]
-      removeFromSiteP <- grep(nameToRemove, colnames(currSitePair))
+      removeFromSitePs1 <- grep(paste("^s1.", nameToRemove, "$", sep=""), colnames(currSitePair))
+      removeFromSitePs2 <- grep(paste("^s2.", nameToRemove, "$", sep=""), colnames(currSitePair))
       ##removes variable from important objects
-      currSitePair <- currSitePair[,-c(removeFromSiteP)]
+      currSitePair <- currSitePair[,-c(removeFromSitePs1,removeFromSitePs2)]
     }
   }
   ##lists tables into one object
@@ -1897,8 +1905,15 @@ permutateSitePair <- function(spTab, siteVarTab, indexTab, vNames){
   #print(vNames)
   ##extracts values of other variables 
   varLists <- lapply(vNames, function(vn, rvTab, spt, inT){if(vn!="Geographic"){
+    ###################
+    #vn <- vNames[[2]]
+    #rvTab=randVarTab
+    #spt=spTab
+    #inT=indexTab
+    ###################
     ##identifies variable columns in randVarTab
-    randCols <- grep(vn, colnames(rvTab))
+    randCols <- grep(paste("^", vn, "$", sep=""), colnames(rvTab))
+    #print(randCols)
     ##identifies variable columns in site-pair table
     spCols <- grep(vn, colnames(spt))
     
@@ -1937,17 +1952,20 @@ permutateVarSitePair <- function(spTab, siteVarTab, indexTab, vName){
   randVarTab <- siteVarTab[sample(nrow(siteVarTab), nrow(siteVarTab)), ]
   
   ##identifies variable columns in randVarTab
-  randCols <- grep(vName, colnames(randVarTab))
+  randCols <- grep(paste("^", vName, "$", sep=""), colnames(randVarTab))
   ##identifies variable columns in site-pair table
-  spCols <- grep(vName, colnames(spTab))
+  spCols1 <- grep(paste("^s1.", vName, "$", sep=""), colnames(spTab))
+  spCols2 <- grep(paste("^s2.", vName, "$", sep=""), colnames(spTab))
   
   ##extracts values based on new index position
   s1var <- sapply(1:nrow(spTab), function(i){randVarTab[indexTab[i,1],randCols]})
   s2var <- sapply(1:nrow(spTab), function(i){randVarTab[indexTab[i,2],randCols]})
   ##places values back into site-pair table
-  spTab[,spCols[1]] <- s1var
-  spTab[,spCols[2]] <- s2var
+  spTab[,spCols1] <- s1var
+  spTab[,spCols2] <- s2var
   
   return(spTab)
 }
 ##########################################################################
+
+

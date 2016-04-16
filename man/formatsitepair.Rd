@@ -99,8 +99,8 @@ A site-pair formatted table containing the response (biological distance or diss
 
 ##table data, species and environmental
 load(system.file("./data/gdm.RData", package="gdm"))
-sppData <- gdmExpData[c(1,2,13,14)]
-envTab <- gdmExpData[c(2:ncol(gdmExpData))]
+sppData <- gdmExpData[, c(1,2,13,14)]
+envTab <- gdmExpData[, c(2:ncol(gdmExpData))]
 
 ##environmental raster data
 ##commented out to reduce example run time
@@ -111,13 +111,14 @@ envTab <- gdmExpData[c(2:ncol(gdmExpData))]
 ##site-species table without coordinates
 testData1a <- reshape2::dcast(sppData, site~species)
 ##site-species table with coordinates
-coords <- unique(sppData[2:ncol(sppData)])
+coords <- unique(sppData[, 2:ncol(sppData)])
 testData1b <- merge(testData1a, coords, by="site")
 ##site-species, table-table
 exFormat1a <- formatsitepair(testData1a, 1, siteColumn="site", XColumn="Long", YColumn="Lat",
 	predData=envTab)
+
 ##site-species, table-raster
-##commented out to reduce example run time
+##not run
 #exFormat1b <- formatsitepair(testData1b, 1, siteColumn="site", XColumn="Long", YColumn="Lat",
 #	predData=envRast)
 
