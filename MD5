@@ -1,6 +1,6 @@
-437f991a64047dbe5303d8f584e72e24 *DESCRIPTION
-086fcc52bead19246631d601412ef033 *NAMESPACE
-a72870a2ec3dde2300d96e650d48c796 *R/GDM_Table_Funcs.R
+fbb7dcfeddff85aa0ab1f6b096614275 *DESCRIPTION
+cdce8b3130e7032b9bc1f78eca9ecd2b *NAMESPACE
+6c94f6b7f73277cbf315c8c7b383eb09 *R/GDM_Table_Funcs.R
 e3284253e3fb25a1cf95db2d6be59dd5 *build/vignette.rds
 65aeadf8800944d0dff183114afe668f *data/gdm.RData
 9d5c5a16efd7918a264740e8c7f32ce0 *inst/doc/gdmVignette.pdf
@@ -12,7 +12,7 @@ e3284253e3fb25a1cf95db2d6be59dd5 *build/vignette.rds
 d79fe49661acdf04e5c3f286ef8d81d2 *man/gdm-package.Rd
 ecf20459972a39f755d797c57395c48f *man/gdm.Rd
 3a09ce5f677e8fa36b76f0451cede94d *man/gdm.transform.Rd
-90b8cfe1992649279eb6605aa6f78e02 *man/gdm.varImp.Rd
+49ffe79675eda6a5774453f72d91bef4 *man/gdm.varImp.Rd
 cae3f6698f667a38636292f4ae85289a *man/gdmDissim.Rd
 905bba10fb75b1bab65c47166863745b *man/gdmExpData.Rd
 7cef92c679260f18f64ed4d0c182df7f *man/isplineExtract.Rd
@@ -37,6 +37,7 @@ ebddc07e450674ba7d63f0e3e623fe90 *src/NNLS_Double.cpp
 7c3cf2d1db9ec79528c72dedad55368c *src/NNLS_Double.h
 08b3e2dba7771c0a607aac18887d22c9 *src/dllmain.cpp
 ab462c601ffdff50fa4cb8d6a6e3faa4 *src/myCallback.h
+51867fdbbaf99f44be3b8ad9a3eb9476 *src/registerDynamicSymbol.c
 28f46edb828912f952e2abe99a8f4ddc *src/stdafx.cpp
 2ec8dc1a653732ab45a7ebdac585943f *src/stdafx.h
 1a2b69b572a3165fc858d8382c7fa20c *vignettes/gdmVignette.pdf.asis
