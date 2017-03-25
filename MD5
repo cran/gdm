@@ -1,6 +1,6 @@
-fbb7dcfeddff85aa0ab1f6b096614275 *DESCRIPTION
+c4b046b975ab4ec979591e2e2466569f *DESCRIPTION
 cdce8b3130e7032b9bc1f78eca9ecd2b *NAMESPACE
-6c94f6b7f73277cbf315c8c7b383eb09 *R/GDM_Table_Funcs.R
+fdea8d6b8eb43e4ed5452e9791c7d08b *R/GDM_Table_Funcs.R
 e3284253e3fb25a1cf95db2d6be59dd5 *build/vignette.rds
 65aeadf8800944d0dff183114afe668f *data/gdm.RData
 9d5c5a16efd7918a264740e8c7f32ce0 *inst/doc/gdmVignette.pdf
@@ -25,15 +25,15 @@ a0fef95af53eb393223c71eebc47b113 *man/permutateVarSitePair.Rd
 48715bc452ab29f42075a3037ad8a1f7 *man/stackedVars.Rd
 6878e067d1110f7a11a9b1f12ab3686a *man/summary.gdm.Rd
 98045d8387d5fcba2b687f75258feb58 *src/GDM_Globals.h
-bfbca56b7a70776014b94b9f8c4dc2b3 *src/Gdmlib.cpp
+82354b144a2e087d38dc422a6dc70bb6 *src/Gdmlib.cpp
 6b61afefcad97a58a0ef9a2025f1761c *src/Gdmlib.h
 bd0a5268367ee858523b118c0d013f95 *src/Makevars
 ad6dd1a279f5e2a22dd311a115d69ade *src/Makevars.win
 d57266a583af761b394ea6b9ee046599 *src/Message.cpp
 0bb2af4f3099e95bdae5a89f7ec11800 *src/Message.h
-4877bbe7ed81612929bc6a3be5db42c3 *src/NNLSDoubleCore.cpp
+312a5d540eb0092c3ef6cbd950efd250 *src/NNLSDoubleCore.cpp
 b579d1884df3314341cf775ed32b91e9 *src/NNLSDoubleCore.h
-ebddc07e450674ba7d63f0e3e623fe90 *src/NNLS_Double.cpp
+e40d21cf0d85a2fb1855f77ebd1632d8 *src/NNLS_Double.cpp
 7c3cf2d1db9ec79528c72dedad55368c *src/NNLS_Double.h
 08b3e2dba7771c0a607aac18887d22c9 *src/dllmain.cpp
 ab462c601ffdff50fa4cb8d6a6e3faa4 *src/myCallback.h
