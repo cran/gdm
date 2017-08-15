@@ -1,8 +1,8 @@
-c4b046b975ab4ec979591e2e2466569f *DESCRIPTION
+ca93bd4f2d58055ea4f23352477d841d *DESCRIPTION
 cdce8b3130e7032b9bc1f78eca9ecd2b *NAMESPACE
-fdea8d6b8eb43e4ed5452e9791c7d08b *R/GDM_Table_Funcs.R
-e3284253e3fb25a1cf95db2d6be59dd5 *build/vignette.rds
-65aeadf8800944d0dff183114afe668f *data/gdm.RData
+4527cf302b03aabefc1497d8edbe4c4f *R/GDM_Table_Funcs.R
+61ee0cff35fb588fb368ebe39dc55089 *build/vignette.rds
+b6cb1f605e561fa904c3631b0877bc76 *data/gdm.RData
 9d5c5a16efd7918a264740e8c7f32ce0 *inst/doc/gdmVignette.pdf
 1a2b69b572a3165fc858d8382c7fa20c *inst/doc/gdmVignette.pdf.asis
 8592828e5093e9db9db86d6fec8b78df *inst/extdata/stackedVars.grd
@@ -25,7 +25,7 @@ a0fef95af53eb393223c71eebc47b113 *man/permutateVarSitePair.Rd
 48715bc452ab29f42075a3037ad8a1f7 *man/stackedVars.Rd
 6878e067d1110f7a11a9b1f12ab3686a *man/summary.gdm.Rd
 98045d8387d5fcba2b687f75258feb58 *src/GDM_Globals.h
-82354b144a2e087d38dc422a6dc70bb6 *src/Gdmlib.cpp
+b17333fc506f6c222e89fd8571ff064a *src/Gdmlib.cpp
 6b61afefcad97a58a0ef9a2025f1761c *src/Gdmlib.h
 bd0a5268367ee858523b118c0d013f95 *src/Makevars
 ad6dd1a279f5e2a22dd311a115d69ade *src/Makevars.win

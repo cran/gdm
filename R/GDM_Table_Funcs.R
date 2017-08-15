@@ -1900,7 +1900,7 @@ gdm.varImp <- function(spTable, geo, splines=NULL, knots=NULL, fullModelOnly=FAL
       
       permSitePairs <- foreach(k=1:nPerm, .verbose=F, .packages=c("gdm"), .export=c("permutateSitePair")) %dopar%
         permutateSitePair(currSitePair, siteData, indexTab, varNames)
-      
+      ##runs gdm on the permuted tables
       permGDM <- try(foreach(k=1:length(permSitePairs), .verbose=F, .packages=c("gdm")) %dopar%
                        gdm(permSitePairs[[k]], geo=geo, splines=NULL, knots=NULL))
       ##closes cores
@@ -1909,10 +1909,11 @@ gdm.varImp <- function(spTable, geo, splines=NULL, knots=NULL, fullModelOnly=FAL
       ##non-parallel version
       permSitePairs <- lapply(1:nPerm, function(i, csp, sd, it, vn){permutateSitePair(csp,sd,it,vn)}, 
                               csp=currSitePair, sd=siteData, it=indexTab, vn=varNames)
+      ##runs gdm on the permuted tables
       permGDM <- lapply(permSitePairs, gdm, geo=geo, splines=NULL, knots=NULL)
     }
     
-    ##runs gdm on the permuted tables
+    ##extracts deviance of permuted gdms
     permModelDev <- sapply(permGDM, function(mod){mod$gdmdeviance})
     ##if needed, removes nulls from output permModelDev
     modPerms <- length(which(sapply(permModelDev,is.null)==TRUE))
@@ -2015,7 +2016,7 @@ gdm.varImp <- function(spTable, geo, splines=NULL, knots=NULL, fullModelOnly=FAL
           permGDM <- lapply(noVarSitePairs, gdm, geo=geo, splines=NULL, knots=NULL)
         }
         
-        ##runs gdm on the permuted tables
+        ##extracts deviance of permuted gdms
         permModelDev <- sapply(permGDM, function(mod){mod$gdmdeviance})
         ##if needed, removes nulls from output permModelDev
         modPerms <- length(which(sapply(permModelDev,is.null)==TRUE))
@@ -2102,11 +2103,18 @@ permutateSitePair <- function(spTab, siteVarTab, indexTab, vNames){
   ##randomizes the row order of the given siteXvar table
   randVarTab <- siteVarTab[sample(nrow(siteVarTab), nrow(siteVarTab)), ]
   
+  #site1x <- siteVarTab$xCoord[1]
+  #site1y <- siteVarTab$yCoord[1]
+  #checkingIn <- siteVarTab[siteVarTab$xCoord==site1x & siteVarTab$yCoord==site1y,]
+  #checkX <- siteVarTab[siteVarTab$xCoord==site1x,]
+  #checkingRand <- randVarTab[randVarTab$xCoord==site1x & randVarTab$yCoord==site1y,]
+  
   ##sets up the coordinate values for the randomized site-pair table
   s1xCoord <- sapply(1:nrow(spTab), function(i){randVarTab[indexTab[i,1],1]})
   s1yCoord <- sapply(1:nrow(spTab), function(i){randVarTab[indexTab[i,1],2]})
   s2xCoord <- sapply(1:nrow(spTab), function(i){randVarTab[indexTab[i,2],1]})
   s2yCoord <- sapply(1:nrow(spTab), function(i){randVarTab[indexTab[i,2],2]})
+  
   
   #print(vNames)
   ##extracts values of other variables 
@@ -2143,6 +2151,10 @@ permutateSitePair <- function(spTab, siteVarTab, indexTab, vNames){
   newSP <- as.data.frame(cbind(spTab$distance, spTab$weights, s1xCoord, s1yCoord, s2xCoord, s2yCoord, site1Vars, site2Vars))
   colnames(newSP) <- colnames(spTab)
   class(newSP) <- c(class(spTab))
+  
+  #getCoords1 <- newSP[newSP$s1.xCoord==site1x,]
+  #getCoords2 <- newSP[newSP$s2.xCoord==site1x,]
+  
   return(newSP)
 }
 ##########################################################################
@@ -2159,6 +2171,12 @@ permutateVarSitePair <- function(spTab, siteVarTab, indexTab, vName){
   ##randomizes the row order of the given siteXvar table
   randVarTab <- siteVarTab[sample(nrow(siteVarTab), nrow(siteVarTab)), ]
   
+  #site1x <- siteVarTab$xCoord[1]
+  #site1y <- siteVarTab$yCoord[1]
+  #checkingIn <- siteVarTab[siteVarTab$xCoord==site1x & siteVarTab$yCoord==site1y,]
+  #checkX <- siteVarTab[siteVarTab$xCoord==site1x,]
+  #checkingRand <- randVarTab[randVarTab$xCoord==site1x & randVarTab$yCoord==site1y,]
+  
   ##identifies variable columns in randVarTab
   randCols <- grep(paste("^", vName, "$", sep=""), colnames(randVarTab))
   ##identifies variable columns in site-pair table
@@ -2171,6 +2189,9 @@ permutateVarSitePair <- function(spTab, siteVarTab, indexTab, vName){
   ##places values back into site-pair table
   spTab[,spCols1] <- s1var
   spTab[,spCols2] <- s2var
+  
+  #getCoords1 <- spTab[spTab$s1.xCoord==site1x,]
+  #getCoords2 <- spTab[spTab$s2.xCoord==site1x,]
   
   return(spTab)
 }
