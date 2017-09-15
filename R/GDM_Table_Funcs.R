@@ -281,7 +281,7 @@ gdm <- function (data, geo=FALSE, splines=NULL, knots=NULL){
   
   ##reports a warning should the model "fit", yet the sum of coefficients = 0
   if(sum(gdmModOb$coefficients)==0){
-    warning("Problem with model fitting, no solution obtained. Sum of spline coefficients = 0. Deviance explained = NULL.")
+    warning("Problem with model fitting, no solution obtained. Sum of spline coefficients = 0. Deviance explained = NULL. Returning NULL object.")
     ##sets the deviance explained to NULL, to reflect that the model didn't fit correctly
     gdmModOb <- NULL
   }
@@ -1665,15 +1665,15 @@ gdm.varImp <- function(spTable, geo, splines=NULL, knots=NULL, fullModelOnly=FAL
   #################
   #spTable <- sitePairTab         ##the input site-pair table to subsample from
   #load("M:/UAE/kavyaWorking/Code/GDM/GDMSitepairTable.RData")
-  #spTable <- gdmTab
+  #spTable <- ddd
   #spTable <- gdmTab[-c(samp),]
   #geo <- T              ##rather or not the gdm model takes geography into account, see gdm
   #splines <- NULL       ##splines gdm setting, see gdm
   #knots <- NULL         ##knots gdm setting, see gdm
-  #fullModelOnly <- F     ##rather to run the full calculations, or just once on the full model, acceptable values are TRUE and FALSE
-  #nPerm <- 5             ##number of permutations
+  #fullModelOnly <- T     ##rather to run the full calculations, or just once on the full model, acceptable values are TRUE and FALSE
+  #nPerm <- 10             ##number of permutations
   #parallel <- T          ##rather or not to run in parallel
-  #cores <- 5             ##if in parallel, the number of cores to run on
+  #cores <- 7             ##if in parallel, the number of cores to run on
   #sampleSites <- 1   ##the percent of sites to be retained before calculating
   #sampleSitePairs <- 1  ##the percent of site-pairs (rows) to be retained before calculating
   #outFile <- NULL
@@ -1880,6 +1880,7 @@ gdm.varImp <- function(spTable, geo, splines=NULL, knots=NULL, fullModelOnly=FAL
   
   ##assigns given site-pair table to new variable, to prevent changing the original input
   currSitePair <- spTable
+  nullGDMFullFit <- 0  ##a variable to track rather or not the fully fitted gdm model returned a NULL object
   
   for(v in 1:nVars){
     #v <- 1
@@ -1889,8 +1890,13 @@ gdm.varImp <- function(spTable, geo, splines=NULL, knots=NULL, fullModelOnly=FAL
     ##however as variables are removed the "full" site-pair table will have less varialbes in it
     fullGDM <- gdm(currSitePair, geo=geo, splines=splines, knots=knots)
     
+    if(is.null(fullGDM)==TRUE){
+      warning(paste("The model did not fit when testing variable number ", v, ". Terminating analysis. Returning output objects filled up to the point of termination.", sep=""))
+      break
+    }
+    
     ##create a series of permutated site-pair tables, randomized site comparisons
-    if(parallel == TRUE){
+    if(parallel==TRUE){
       #require(foreach)
       #require(doParallel)
       
