@@ -789,7 +789,7 @@ formatsitepair <- function(bioData, bioFormat, dist="bray", abundance=FALSE,
   
   ##makes sure predData is in an acceptable format
   if(!(class(predData)=="data.frame" | class(predData)=="matrix" | class(predData)=="RasterStack" | class(predData)=="RasterLayer" | class(predData)=="RasterBrick")){
-    "predData should be a data frame or matrix in one of the acceptable formats"
+    "predData should be a data frame, matrix, or raster in one of the acceptable formats"
   }
   if(class(predData)[1]=="data.frame" | class(predData)[1]=="matrix"){
     predData <- as.data.frame(predData, stringsAsFactors=F)
