@@ -1730,9 +1730,10 @@ void GDM_FitFromTable(char **wspath,
 	//
 	char lpTmpFile[256];
 	char *s;
-	char *dir = *wspath;
-	char const *headFile = "gdmTemp";
-	s = tempnam(dir, headFile);
+	//char *dir = *wspath;
+	//char const *headFile = "gdmTemp";
+	//s = tempnam(dir, headFile);
+	s = tmpnam(NULL);
 	
 	//file extension
 	std::string bin = ".bin";

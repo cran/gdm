@@ -1,4 +1,4 @@
-500c047f761c60283430909c190f3f98 *DESCRIPTION
+8803fc4ae7ff3b06b5d9638b8d379380 *DESCRIPTION
 cdce8b3130e7032b9bc1f78eca9ecd2b *NAMESPACE
 c3e6164921d9bc1e2b037f4833f86834 *R/GDM_Table_Funcs.R
 80ebb40a123025593abb35f0e805b631 *build/vignette.rds
@@ -25,7 +25,7 @@ a0fef95af53eb393223c71eebc47b113 *man/permutateVarSitePair.Rd
 48715bc452ab29f42075a3037ad8a1f7 *man/stackedVars.Rd
 6878e067d1110f7a11a9b1f12ab3686a *man/summary.gdm.Rd
 98045d8387d5fcba2b687f75258feb58 *src/GDM_Globals.h
-cbe1ae13f0b6141dcf809a9e3ec8d9e1 *src/Gdmlib.cpp
+25edcea2b65e93e00426da618e17a342 *src/Gdmlib.cpp
 6b61afefcad97a58a0ef9a2025f1761c *src/Gdmlib.h
 bd0a5268367ee858523b118c0d013f95 *src/Makevars
 ad6dd1a279f5e2a22dd311a115d69ade *src/Makevars.win
