@@ -192,11 +192,11 @@ void GDM_FitFromTable(char **wspath,
 	char *cbin = new char[bin.length() + 1];
 	strcpy(cbin, bin.c_str());
 
-	char lpTmpFile[256];
+	char lpTmpFile[1024];
 	strlcpy(lpTmpFile, *wspath, sizeof(lpTmpFile));
 	strlcat(lpTmpFile, cbin, sizeof(lpTmpFile));
-
-	Rcpp::Rcout << lpTmpFile << std::endl;
+	//Rcpp::Rcout << lpTmpFile << std::endl;
+	
 	int h = _open( lpTmpFile, _O_BINARY | _O_CREAT | _O_TRUNC | _O_RDWR, S_IREAD | S_IWRITE );
 	if ( h < 0 )
 	{
@@ -813,7 +813,7 @@ double DoSplineCalc( double dVal, double q1, double q2, double q3 )
 //
 void ShowQuantiles(double *pQuants, int nPreds, int *pSplines)
 {
-	char buff[256];
+	char buff[1024];
 	double *pTmp = &pQuants[0];
 	for ( int i=0; i<nPreds; i++ )
 	{
@@ -958,11 +958,11 @@ void GDM_FitFromTable(char **wspath,
 	char *cbin = new char[bin.length() + 1];
 	strcpy(cbin, bin.c_str());
 
-	char lpTmpFile[256];
+	char lpTmpFile[1024];
 	strlcpy(lpTmpFile, *wspath, sizeof(lpTmpFile));
 	strlcat(lpTmpFile, cbin, sizeof(lpTmpFile));
-
-	Rcpp::Rcout << lpTmpFile << std::endl;
+	//Rcpp::Rcout << lpTmpFile << std::endl;
+	
 	int h = _open( lpTmpFile, _O_BINARY | _O_CREAT | _O_TRUNC | _O_RDWR, S_IREAD | S_IWRITE );
 	if ( h < 0 )
 	{
@@ -1576,7 +1576,7 @@ double DoSplineCalc( double dVal, double q1, double q2, double q3 )
 //
 void ShowQuantiles(double *pQuants, int nPreds, int *pSplines)
 {
-	char buff[256];
+	char buff[1024];
 	double *pTmp = &pQuants[0];
 	for ( int i=0; i<nPreds; i++ )
 	{
@@ -1720,11 +1720,10 @@ void GDM_FitFromTable(char **wspath,
 	char *cbin = new char[bin.length() + 1];
 	strcpy(cbin, bin.c_str());
 
-	char lpTmpFile[256];
+	char lpTmpFile[1024];
 	strlcpy(lpTmpFile, *wspath, sizeof(lpTmpFile));
 	strlcat(lpTmpFile, cbin, sizeof(lpTmpFile));
-
-	Rcpp::Rcout << lpTmpFile << std::endl;
+	//Rcpp::Rcout << lpTmpFile << std::endl;
 
 	int h = creat( lpTmpFile, PERMS );
 	if ( h < 0 )
@@ -2342,7 +2341,7 @@ double DoSplineCalc( double dVal, double q1, double q2, double q3 )
 //
 void ShowQuantiles(double *pQuants, int nPreds, int *pSplines)
 {
-	char buff[256];
+	char buff[1024];
 	double *pTmp = &pQuants[0];
 	for ( int i=0; i<nPreds; i++ )
 	{
