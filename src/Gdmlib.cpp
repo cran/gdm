@@ -196,7 +196,7 @@ void GDM_FitFromTable(char **wspath,
 	strlcpy(lpTmpFile, *wspath, sizeof(lpTmpFile));
 	strlcat(lpTmpFile, cbin, sizeof(lpTmpFile));
 	//Rcpp::Rcout << lpTmpFile << std::endl;
-	
+
 	int h = _open( lpTmpFile, _O_BINARY | _O_CREAT | _O_TRUNC | _O_RDWR, S_IREAD | S_IWRITE );
 	if ( h < 0 )
 	{
@@ -962,7 +962,7 @@ void GDM_FitFromTable(char **wspath,
 	strlcpy(lpTmpFile, *wspath, sizeof(lpTmpFile));
 	strlcat(lpTmpFile, cbin, sizeof(lpTmpFile));
 	//Rcpp::Rcout << lpTmpFile << std::endl;
-	
+
 	int h = _open( lpTmpFile, _O_BINARY | _O_CREAT | _O_TRUNC | _O_RDWR, S_IREAD | S_IWRITE );
 	if ( h < 0 )
 	{
@@ -1733,12 +1733,34 @@ void GDM_FitFromTable(char **wspath,
 		return;
 	}
 	int nThis = 0;
-	for ( int i=0; i<(nTotalSplines+1); i++ )
-	{
-		write( h, &pPredData[nThis], nRows * sizeof( double ) );
-		nThis += nRows;
-	}
-	close( h );
+	// for ( int i=0; i<(nTotalSplines+1); i++ )
+	// {
+	// 	write( h, &pPredData[nThis], nRows * sizeof( double ) );
+	// 	nThis += nRows;
+	// }
+	// close( h );
+
+	for ( int i=0;i<(nTotalSplines+1); i++ )
+    {
+        ssize_t szTotalToWrite = nRows * sizeof( double );
+        ssize_t szLeftToWrite = szTotalToWrite;
+        ssize_t szBytesWritten = 0;
+        while( szLeftToWrite > 0 )
+            {
+                szBytesWritten = write( h, &pPredData[nThis] + szTotalToWrite - szLeftToWrite,  szLeftToWrite);
+                if ( szBytesWritten == -1 )
+                    {
+                        close(h);
+                        return; // an error occurred, maybe keep trying if it was -EAGAIN?
+                    }
+                else
+                    {
+                        szLeftToWrite -= szBytesWritten;
+                    }
+            }
+        nThis += nRows;
+    }
+	close(h);
 
 
 
@@ -2339,22 +2361,24 @@ double DoSplineCalc( double dVal, double q1, double q2, double q3 )
 //
 // Display the contents of the quantile vector
 //
-void ShowQuantiles(double *pQuants, int nPreds, int *pSplines)
-{
-	char buff[1024];
-	double *pTmp = &pQuants[0];
-	for ( int i=0; i<nPreds; i++ )
-	{
-		sprintf( buff, "Quant %d: ", i+1 );
-
-		for ( int j=0; j<pSplines[i]; j++ )
-		{
-			sprintf( buff, "%s %lf ", buff, *pTmp);
-			++pTmp;
-		}
-		//Message(buff);
-	}
-}
+// void ShowQuantiles(double *pQuants, int nPreds, int *pSplines)
+// {
+// 	char buff[1024];
+// 	double *pTmp = &pQuants[0];
+// 	for ( int i=0; i<nPreds; i++ )
+// 	{
+// 		sprintf( buff, "Quant %d: ", i+1 );
+//
+// 		for ( int j=0; j<pSplines[i]; j++ )
+// 		{
+// 			// Modified by MCF (2/03/2020):
+// 			//sprintf( buff, "%s %lf ", buff, *pTmp);
+// 			sprintf( buff, "%s %f ", buff, *pTmp);
+// 			++pTmp;
+// 		}
+// 		//Message(buff);
+// 	}
+// }
 
 
 

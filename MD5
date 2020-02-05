@@ -1,7 +1,7 @@
-029ece9461a5232f187e91951db3d9c5 *DESCRIPTION
-cdce8b3130e7032b9bc1f78eca9ecd2b *NAMESPACE
-361db70db29648e857583aeb60063447 *R/GDM_Table_Funcs.R
-80ebb40a123025593abb35f0e805b631 *build/vignette.rds
+af2a45218692f94704de587fe8f26a4f *DESCRIPTION
+6aa860538821dcb1d340c79dd475b5c8 *NAMESPACE
+c610a0ed7a16398f8d9c6bf8f1d37884 *R/GDM_Table_Funcs.R
+375ba66d70a88d6bd74454d503c3b4d6 *build/vignette.rds
 6baa569bcb14fc7493ba592d55caa7bf *data/gdm.RData
 9d5c5a16efd7918a264740e8c7f32ce0 *inst/doc/gdmVignette.pdf
 1a2b69b572a3165fc858d8382c7fa20c *inst/doc/gdmVignette.pdf.asis
@@ -25,7 +25,7 @@ a0fef95af53eb393223c71eebc47b113 *man/permutateVarSitePair.Rd
 48715bc452ab29f42075a3037ad8a1f7 *man/stackedVars.Rd
 6878e067d1110f7a11a9b1f12ab3686a *man/summary.gdm.Rd
 98045d8387d5fcba2b687f75258feb58 *src/GDM_Globals.h
-ba62288f63df05e9f2755ec5acc8c151 *src/Gdmlib.cpp
+dcdb0f80e710d38ca26328292e2c6ac9 *src/Gdmlib.cpp
 6b61afefcad97a58a0ef9a2025f1761c *src/Gdmlib.h
 bd0a5268367ee858523b118c0d013f95 *src/Makevars
 ad6dd1a279f5e2a22dd311a115d69ade *src/Makevars.win
@@ -33,7 +33,7 @@ d57266a583af761b394ea6b9ee046599 *src/Message.cpp
 0bb2af4f3099e95bdae5a89f7ec11800 *src/Message.h
 312a5d540eb0092c3ef6cbd950efd250 *src/NNLSDoubleCore.cpp
 b579d1884df3314341cf775ed32b91e9 *src/NNLSDoubleCore.h
-e40d21cf0d85a2fb1855f77ebd1632d8 *src/NNLS_Double.cpp
+cac1698c7eaad7a59b282c51c190ba9c *src/NNLS_Double.cpp
 7c3cf2d1db9ec79528c72dedad55368c *src/NNLS_Double.h
 08b3e2dba7771c0a607aac18887d22c9 *src/dllmain.cpp
 ab462c601ffdff50fa4cb8d6a6e3faa4 *src/myCallback.h

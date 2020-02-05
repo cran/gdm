@@ -1,5 +1,5 @@
-##########################################################################
-##function to fit a gdm object from a sitepair table
+# FUNCTION: gdm ----------------------------------------------------------------
+# fit a gdm object from a sitepair table 
 gdm <- function (data, geo=FALSE, splines=NULL, knots=NULL){
   #################
   ##lines used to quickly test function
@@ -12,20 +12,20 @@ gdm <- function (data, geo=FALSE, splines=NULL, knots=NULL){
     
   ##adds error checking to gdm function
   ##checks to see if in site-pair format from formatsitepair function
-  if(class(data)[1] != "gdmData"){
-    warning("data class does not include type 'gdmData'. Make sure your data is in site-pair format or the gdm model will not fit.")
+  if(!is(data, "gdmData")){
+    warning("Data object for model fitting is not of class 'gdmData'. Did you format your data using formatsitepair?")
   }
   ##checks to makes sure data is a matrix or data frame
-  if(!(class(data)[1]=="gdmData" | class(data)[1]=="matrix" | class(data)[1]=="data.frame")){
-    stop("data argument needs to be gdmData, a matrix, or a data frame")
+  if(!(is(data, "gdmData") | is(data, "matrix") | is(data, "data.frame"))){
+    stop("Data object for model fitting needs to be either of class 'gdmData', 'matrix', or 'data.frame'.")
   }
     
   ##sanity check on the data table
   if(ncol(data) < 6){
-    stop("Not enough columns in data. (Minimum need: Observed, weights, s1.xCoord, s1.yCoord, s2.xCoord, s2.yCoord)")
+    stop("Data object for model fitting requires at least 6 columns: Observed, weights, s1.xCoord, s1.yCoord, s2.xCoord, s2.yCoord")
   }  
   if(nrow(data) < 1){
-    stop("Not enough rows in data")
+    stop("Data object for model fitting has < 1 row.")
   }
     
   ##checks that geo has either TRUE or FALSE
@@ -33,21 +33,21 @@ gdm <- function (data, geo=FALSE, splines=NULL, knots=NULL){
     stop("geo argument must be either TRUE or FALSE")
   }
   ##makes sure splines is a numeric vector
-  if(is.null(splines)==FALSE & class(splines)!="numeric"){
-    stop("argument splines needs to be a numeric data type")
+  if(is.null(splines)==FALSE & !is(splines, "numeric")){
+    stop("splines argument is not of class = 'numeric'.")
   }
   ##checks knots inputs
-  if(is.null(knots)==FALSE & class(knots)!="numeric"){
-    stop("argument knots needs to be a numeric data type")
+  if(is.null(knots)==FALSE & !is(knots, "numeric")){
+    stop("knots argument is not of class = 'numeric'.")
   }
     
   ##check that the response data is [0..1]
   rtmp <- data[,1]
   if(length(rtmp[rtmp<0]) > 0){
-    stop("Response data has negative values. Must be between 0 - 1.")
+    stop("Response data have negative values. Must be between 0 - 1.")
   }
   if (length(rtmp[rtmp>1]) > 0){
-    stop("Response data has values greater than 1. Must be between 0 - 1.")
+    stop("Response data have values greater than 1. Must be between 0 - 1.")
   }
 
   ##current data format is response,weights,X0,Y0,X1,Y1 before any predictor data (thus 6 leading columns)
@@ -60,7 +60,7 @@ gdm <- function (data, geo=FALSE, splines=NULL, knots=NULL){
   
   ##checks to make sure at least one predictor is available
   if(nPreds < 1){
-    stop("Data has NO predictors")
+    stop("Data has no predictor varaibles.")
   }
 
   ##setup the predictor name list, and removes the "s1." and "s2." to make resulting names more intuitive
@@ -122,7 +122,7 @@ gdm <- function (data, geo=FALSE, splines=NULL, knots=NULL){
         
       if(geo==T){
         if(splines[1] < 3){
-          stop("Must have at least 3 splines per predictor")
+          stop("Must have at least 3 splines per predictor.")
         }
           
         ## get knots for the geographic distance
@@ -144,7 +144,7 @@ gdm <- function (data, geo=FALSE, splines=NULL, knots=NULL){
           for(i in seq(from = 1, to = nPreds-1, by = 1)){
             num_splines <- splines[i+1]
             if(num_splines < 3){
-              stop("Must have at least 3 splines per predictor")
+              stop("Must have at least 3 splines per predictor.")
             }
                 
             v <- c(data[,i+LEADING_COLUMNS], data[,i+LEADING_COLUMNS+nPreds-1])                 
@@ -168,7 +168,7 @@ gdm <- function (data, geo=FALSE, splines=NULL, knots=NULL){
         for(i in seq(from = 1, to = nPreds, by = 1)){
           num_splines <- splines[i]
           if(num_splines < 3){
-            stop("Must have at least 3 splines per predictor")
+            stop("Must have at least 3 splines per predictor.")
           }
               
           v <- c(data[,i+LEADING_COLUMNS], data[,i+LEADING_COLUMNS+nPreds])          
@@ -281,7 +281,7 @@ gdm <- function (data, geo=FALSE, splines=NULL, knots=NULL){
   
   ##reports a warning should the model "fit", yet the sum of coefficients = 0
   if(sum(gdmModOb$coefficients)==0){
-    warning("Problem with model fitting, no solution obtained. Sum of spline coefficients = 0. Deviance explained = NULL. Returning NULL object.")
+    warning("The algorithm was unable to fit a model to your data. The sum of the spline coefficients = 0 and deviance explained = NULL. Returning NULL object.")
     ##sets the deviance explained to NULL, to reflect that the model didn't fit correctly
     gdmModOb <- NULL
   }
@@ -447,36 +447,36 @@ predict.gdm <- function (object, data, time=FALSE, predRasts=NULL, ...){
   if(time==TRUE){
     ##checks to make sure the inputs are correct
     if(is.null(predRasts)==TRUE){
-      stop("Prediction rasters needed when time is TRUE")
+      stop("Prediction rasters required when time = TRUE")
     }
-    if(class(data)!="RasterStack" & class(data)!="RasterLayer" & class(data)!="RasterBrick"){
-      stop("Prediction data need to be a raster object when time is TRUE")
+    if(!is(data, "RasterStack") & !is(data, "RasterLayer") & !is(data, "RasterBrick")){
+      stop("Prediction data need to be a raster object when time = TRUE")
     }
-    if(class(predRasts)!="RasterStack" & class(predRasts)!="RasterLayer" & class(predRasts)!="RasterBrick"){
-      stop("predRasts need to be a raster object when time is TRUE")
+    if(!is(predRasts, "RasterStack") & !is(predRasts, "RasterLayer") & !is(predRasts, "RasterBrick")){
+      stop("predRasts need to be a raster object when time = TRUE")
     }
     if(nlayers(data)!=nlayers(predRasts)){
       stop("Current and future raster objects must have the same number of layers")
     }
     if(object$geo==TRUE){
       if(nlayers(data)!=length(object$predictors)-1 | nlayers(predRasts)!=length(object$predictors)-1){
-        stop("Number of predictor variables does not equal the number used to fit the model")
+        stop("Number of variables supplied for prediction does not equal the number used to fit the model.")
       }
     }else{
       if(nlayers(data)!=length(object$predictors) | nlayers(predRasts)!=length(object$predictors)){
-        stop("Number of predictor variables does not equal the number used to fit the model")
+        stop("Number of variables supplied for prediction does not equal the number used to fit the model.")
       }
     }
     
     for(i in 1:nlayers(data)){
       if(names(data)[i]!=names(predRasts)[i]){
-        stop("Layer names do not match the variables used to fit the model")
+        stop("Layer names do not match the variables used to fit the model.")
       }
     }
     ##tests to see if raster data is stackable
     tryRasts <- try(stack(data[[1]], predRasts[[1]]), silent=TRUE)
-    if(class(tryRasts)=="try-error"){
-      stop("Current and Prediction rasters do not stack, make sure rasters are spatially congruant.")
+    if(is(tryRasts, "try-error")){
+      stop("Current and prediction rasters differ in extent, resolution, and / or origin and therefore are not stackable.")
     }
     
     ##sets up sitepair table with current and future data
@@ -533,12 +533,12 @@ gdm.transform <- function(model, data){
   
   ##error checking of inputs
   ##checks to make sure a gdm model is given
-  if(class(model)[1]!="gdm"){
-    stop("model argument must be a gdm model object")
+  if(!is(model, "gdm")){
+    stop("model object must be of class 'gdm'.")
   }
   ##checks to make sure data is a correct format
   if(!(dataCheck=="RasterStack" | dataCheck=="RasterLayer" | dataCheck=="RasterBrick" | dataCheck=="data.frame")){
-    stop("Data to be transformed must be either a raster object or data frame")
+    stop("Data to be transformed must either be a raster object or data frame.")
   }
   
   ##checks rather geo was T or F in the model object
@@ -555,7 +555,7 @@ gdm.transform <- function(model, data){
     ##checks for NA in the 
     checkNAs <- as.data.frame(which(is.na(data), arr.ind=T))
     if(nrow(checkNAs)>0){
-      warning("After extracting raster data, NAs found from one or more layers. Removing NAs from data object to be transformed.")
+      warning("Extracted data from rasters contained NAs. These were automatically removed from the data object to be transformed.")
       data <- na.omit(data)
       rastCells <- rastCells[-c(checkNAs$row)]
     }
@@ -777,21 +777,21 @@ formatsitepair <- function(bioData, bioFormat, dist="bray", abundance=FALSE,
   #sampleSites <- 1
   ###########################
   ##input error checking
-  ##makes sure bioData is in an acceptable format
-  if(!(class(bioData)[1]=="data.frame" | class(bioData)[1]=="matrix" | class(bioData)[1]=="gdmData")){
-    "bioData should be a data frame or matrix in one of the acceptable formats"
+  ##makes sure bioData has the required format
+  if(!(is(bioData, "data.frame") | is(bioData, "matrix") | is(bioData, "gdmData"))){
+    "bioData object needs to be either of class data.frame or matrix in one of the acceptable formats listed in the help."
   }
   ##transforms bioData into a data frame in order to proceed without error, just to make sure,
   ##basically remove the affects of factors
-  if(class(bioData)[1]=="data.frame" | class(bioData)[1]=="matrix"){
+  if(is(bioData, "data.frame") | is(bioData, "matrix")){
     bioData <- as.data.frame(bioData, stringsAsFactors=F)
   }
   
   ##makes sure predData is in an acceptable format
-  if(!(class(predData)=="data.frame" | class(predData)=="matrix" | class(predData)=="RasterStack" | class(predData)=="RasterLayer" | class(predData)=="RasterBrick")){
-    "predData should be a data frame, matrix, or raster in one of the acceptable formats"
+  if(!(is(predData, "data.frame") | is(predData, "matrix") | is(predData, "RasterStack") | is(predData, "RasterLayer") | is(predData, "RasterBrick"))){
+    "predData object needs to either of class data.frame, matrix, or raster."
   }
-  if(class(predData)[1]=="data.frame" | class(predData)[1]=="matrix"){
+  if(is(predData, "data.frame") | is(predData, "matrix")){
     predData <- as.data.frame(predData, stringsAsFactors=F)
   }
   
@@ -821,7 +821,7 @@ formatsitepair <- function(bioData, bioFormat, dist="bray", abundance=FALSE,
   }
   ##if weightType == custom, makes sure a custWeights is attached
   if(weightType=="custom" & is.null(custWeights)==T){
-    stop("custom weightType provided with no custWeights")
+    stop("weightType argument = 'custom', but no custWeights vector provided.")
   }
   ##with bioFormat 2, makes sure spp data has been included
   if(bioFormat==2 & is.null(sppColumn)==TRUE){
@@ -833,18 +833,18 @@ formatsitepair <- function(bioData, bioFormat, dist="bray", abundance=FALSE,
   #}
   ##makes sure that a site column is provided when using table type 2 and raster environmental data
   if(bioFormat==2 & is.null(siteColumn)==TRUE){
-    if(!(class(predData)=="RasterStack" | class(predData)=="RasterLayer" | class(predData)=="RasterBrick")){
-      stop("A siteColumn needs to be provided in either the bioData or predData inputs")
+    if(!(is(predData, "RasterStack") | is(predData, "RasterLayer") | is(predData, "RasterBrick"))){
+      stop("A siteColumn needs to be provided in either the bioData or predData objects.")
     }
   }
   ##when a site column is provided
   if(is.null(siteColumn)==FALSE){
     ##makes sure the site column name is of type character
-    if(class(siteColumn)!="character"){
-      stop("siteColumn argument needs to be as type character")
+    if(!is(siteColumn, "character")){
+      stop("siteColumn argument needs to be of class = 'character'.")
       ##checks to see if siteColumn exists in the bioData for bioFormats 1 and 2    
     }else if(!(siteColumn %in% colnames(bioData)) & (bioFormat==1 | bioFormat==2)){
-      stop("Cannot find a match for siteColumn in the columns of bioData.")
+      stop("Cannot find a match for the name of the siteColumn in the columns of the bioData object.")
     }
     ##if the siteColumn is provided with input type 3, remove it
     #if(bioFormat==3 & siteColumn %in% colnames(bioData)){
@@ -855,10 +855,10 @@ formatsitepair <- function(bioData, bioFormat, dist="bray", abundance=FALSE,
   ##checks to make sure that the coordinate columns are characters and can be found in either the biological or 
   ##environmental data
   if(bioFormat!=4){
-    if(class(XColumn)!="character"){
-      stop("XColumn argument needs to be as type character")
-    }else if(class(YColumn)!="character"){
-      stop("YColumn argument needs to be as type character")
+    if(!is(XColumn, "character")){
+      stop("XColumn argument needs to be of class 'character'.")
+    }else if(!is(YColumn, "character")){
+      stop("YColumn argument needs to be of class 'character'.")
     }else if(!(XColumn %in% colnames(bioData) | XColumn %in% colnames(predData))){
       stop("XColumn not found in either the bioData or predData arguments")
     }else if(!(YColumn %in% colnames(bioData) | YColumn %in% colnames(predData))){
@@ -870,19 +870,19 @@ formatsitepair <- function(bioData, bioFormat, dist="bray", abundance=FALSE,
     if(weightType=="richness"){
       stop("Cannot weight by site richness when supplying the biological data as a distance matrix.")
     }else if(nrow(bioData)!=(ncol(bioData)-1)){
-      stop("Biological dissimilarity has differing number of rows to number of columns. Did you forget to add a column for site ID's?")
+      stop("Biological dissimilarity matrix must have the same number of rows and columns. Did you forget to add a column for site ID's?")
     }
   }
   
   ##warns if distPreds are not matrices
   for(mat in distPreds){
-    if(class(mat)!="matrix" & class(mat)!="data.frame"){
-      warning("One or more of the provided distance predictor matrices are not of class 'matrix'.")
+    if(!is(mat, "matrix") & !is(mat, "data.frame")){
+      warning("One or more of the provided predictor distance matrices are not of class 'matrix'.")
     }
   }
   ##if a custom weight vector is provided, makes sure it is a vector
-  if(is.null(custWeights)==FALSE & (class(custWeights)!="data.frame" & class(custWeights)!="matrix")){
-    stop("argument custWeights needs to be a data frame or matrix data type")
+  if(is.null(custWeights)==FALSE & (!is(custWeights, "data.frame") & !is(custWeights, "matrix"))){
+    stop("argument custWeights needs to be of class 'data.frame' or 'matrix'.")
   }
   
   ##sets up variables to be used later
@@ -911,7 +911,7 @@ formatsitepair <- function(bioData, bioFormat, dist="bray", abundance=FALSE,
       
       ##insert presence if abundance was not given
       if(is.null(abundColumn)){
-        warning("No abundance column specified, assuming species data are presence")
+        warning("No abundance column was specified, so the species data are assumed to be presences.")
         bioData["reallysupercoolawesomedata"] <- 1
         abundColumn <- "reallysupercoolawesomedata"
       }
@@ -940,15 +940,15 @@ formatsitepair <- function(bioData, bioFormat, dist="bray", abundance=FALSE,
     }
     
     ##checks unique sites against rasters
-    if(class(predData)=="RasterStack" | class(predData)=="RasterLayer" | class(predData)=="RasterBrick"){
+    if(is(predData, "RasterStack") | is(predData, "RasterLayer") | is(predData, "RasterBrick")){
       ##when using rasters, uses the cell as the site 
-      warning("With raster prediction data, defaulting sites to cells.")
+      warning("When using rasters for prediction data, sites are assigned to the cells in which they are located and then aggreagted as necessary (e.g., if more than one site falls in the same raster cell - common for rasters with large cells).")
       ##gets the cell location of the given coordinates
       cellID <- as.data.frame(cellFromXY(predData, locs))
       colnames(cellID)[which(colnames(cellID)=="cellFromXY(predData, locs)")] <- "cellName"
       ##if none of the points intersected with the prediction raster
       if(nrow(cellID)==sum(is.na(cellID$cellName))){
-        stop("None of the given points intersect with the given raster data. Double check that your geography is correct and that the given XColumn and YColumn values are correct.")
+        stop("None of the data points provided intersect with the rasters. Double check spatial data.")
       }
       cellLocs <- as.data.frame(xyFromCell(predData, cellID$cellName))
       ##temporarily keeps old site in to identify what to remove from other objects
@@ -1231,7 +1231,7 @@ createsitepair <- function(dist, spdata, envInfo, dXCol, dYCol, siteCol,
   s2 <- unlist(sapply(seq(length(count),1), function(y){c(s2, (max(count)-y+2):(max(count)+1))}))
   
   if(length(s1)!=length(distance)){
-    stop("The length of distance values are not the same as the expected number of rows of the site-pair table, unable to proceed.")
+    stop("The length of distance values is not the same as the expected number of rows in the site-pair table, unable to proceed.")
   }
   
   if(weightsType[1]=="equal"){
@@ -1252,7 +1252,7 @@ createsitepair <- function(dist, spdata, envInfo, dXCol, dYCol, siteCol,
     }
     
     if(sum(checkTab>1)>0){
-      stop("A site has two or more unique entries of data associated with it. Check data for issues.")
+      stop("A site has two or more unique entries of data associated with it.")
     }
     s1.xCoord <- envInfo[s1, dXCol]
     s2.xCoord <- envInfo[s2, dXCol]
@@ -1264,7 +1264,7 @@ createsitepair <- function(dist, spdata, envInfo, dXCol, dYCol, siteCol,
     s1.yCoord <- spdata[s1, dYCol]
     s2.yCoord <- spdata[s2, dYCol]
   }else{
-    stop("X,Y Coordinates not found with unique sites, unable to build site-pair table")
+    stop("X and Y coordinates not found with unique sites, unable to build site-pair table")
   }
   
   ##sets up output table
@@ -1298,8 +1298,8 @@ isplineExtract <- function (model){
   ###########################
   ##error checking
   ##checks to make sure a gdm model is given
-  if(class(model)[1]!="gdm"){
-    stop("model argument must be a gdm model object")
+  if(!is(model, "gdm")){
+    stop("model argument must be of class = 'gdm'.")
   }
   
   ##Collects or sets simple data
@@ -1360,20 +1360,20 @@ plotUncertainty <- function(spTable, sampleSites, bsIters, geo=FALSE, splines=NU
   #################
   ##function breaks and warnings
   ##makes sure that table is a properly formated site-pair table
-  if(class(spTable)[1] != "gdmData"){
-    warning("table class does not include type 'gdmData'. Make sure your data is in site-pair format. See the formatsitepair fucntion for help.")
+  if(!is(spTable, "gdmData")){
+    warning("The spTable object is not of class 'gdmData'. See the formatsitepair function for help.")
   }
   ##checks to makes sure table is a matrix or table frame
-  if(!(class(spTable)[1]=="gdmData" | class(spTable)[1]=="matrix" | class(spTable)[1]=="data.frame")){
-    stop("table argument needs to be a matrix or a table frame")
+  if(!(is(spTable, "gdmData") | is(spTable, "matrix") | is(spTable, "data.frame"))){
+    stop("The spTable object must be of class 'gdmData', 'matrix', or 'data.frame'.")
   }
   
   ##sanity check on the data table
   if(ncol(spTable) < 6){
-    stop("Not enough columns in table. (Minimum need: Observed, weights, X0, Y0, X1, Y1)")
+    stop("spTable object requires at least 6 columns: Observed, weights, s1.xCoord, s1.yCoord, s2.xCoord, s2.yCoord")
   }  
   if(nrow(spTable) < 1){
-    stop("Not enough rows in table")
+    stop("spTable object has < 1 rows.")
   }
   
   ##checks that geo has either TRUE or FALSE
@@ -1381,12 +1381,12 @@ plotUncertainty <- function(spTable, sampleSites, bsIters, geo=FALSE, splines=NU
     stop("geo argument must be either TRUE or FALSE")
   }
   ##makes sure splines is a numeric vector
-  if(is.null(splines)==FALSE & class(splines)!="numeric"){
-    stop("argument splines needs to be a numeric data type")
+  if(is.null(splines)==FALSE & !is(splines, "numeric")){
+    stop("splines object must of of class = 'numeric'.")
   }
   ##checks knots inputs
-  if(is.null(knots)==FALSE & class(knots)!="numeric"){
-    stop("argument knots needs to be a numeric data type")
+  if(is.null(knots)==FALSE & !is(knots, "numeric")){
+    stop("knots object must of of class = 'numeric'.")
   }
   
   ##checks that parallel has either TRUE or FALSE
@@ -1418,7 +1418,7 @@ plotUncertainty <- function(spTable, sampleSites, bsIters, geo=FALSE, splines=NU
     stop("sampleSites must be a number between 0 and 1")
   }
   if(sampleSites==0){
-    stop("a sampleSites value of 0 will remove all sites from the analysis")
+    stop("a sampleSites value of 0 will remove all sites from the analysis (bad).")
   }
   ##double makes sure these values are integers, seems to truncate if not
   cores <- as.integer(cores)
@@ -1592,12 +1592,12 @@ removeSitesFromSitePair <- function(spTable, sampleSites){
   
   ##adds error checking to gdm function
   ##checks to see if in site-pair format from formatsitepair function
-  if(class(spTable)[1] != "gdmData"){
-    warning("spTable class does not include type 'gdmData'. Make sure your data is in site-pair format or the gdm model will not fit.")
+  if(!is(spTable, "gdmData")){
+    warning("The spTable object is not of class 'gdmData'. See the formatsitepair function for help.")
   }
   ##checks to makes sure data is a matrix or data frame
-  if(!(class(spTable)[1]=="gdmData" | class(spTable)[1]=="matrix" | class(spTable)[1]=="data.frame")){
-    stop("spTable argument needs to be gdmData, a matrix, or a data frame")
+  if(!(is(spTable, "gdmData") | is(spTable, "matrix") | is(spTable, "data.frame"))){
+    stop("The spTable object needs to be of class 'gdmData', 'matrix', or 'data.frame'.")
   }
   ##makes sure that sampleSites is a number between 0 and 1,
   ##and that it is not equal to 0
@@ -1685,17 +1685,17 @@ gdm.varImp <- function(spTable, geo, splines=NULL, knots=NULL, fullModelOnly=FAL
   
   ##error checking for input objects
   ##checks to see if in site-pair format from formatsitepair function
-  if(class(spTable)[1] != "gdmData"){
-    warning("spTable class does not include type 'gdmData'. Make sure your data is in site-pair format or the gdm model will not fit.")
+  if(!is(spTable, "gdmData")){
+    warning("The spTable object is not of class 'gdmData'. See the formatsitepair function for help.")
   }
   ##checks to makes sure data is a matrix or data frame
-  if(!(class(spTable)[1]=="gdmData" | class(spTable)[1]=="matrix" | class(spTable)[1]=="data.frame")){
+  if(!(is(spTable, "gdmData") | is(spTable, "matrix") | is(spTable, "data.frame"))){
     stop("spTable argument needs to be gdmData, a matrix, or a data frame")
   }
   
   ##sanity check on the data table
   if(ncol(spTable) < 6){
-    stop("Not enough columns in data. (Minimum need: Observed, weights, X0, Y0, X1, Y1)")
+    stop("spTable object requires at least 6 columns: Observed, weights, s1.xCoord, s1.yCoord, s2.xCoord, s2.yCoord")
   }  
   if(nrow(spTable) < 1){
     stop("Not enough rows in data")
@@ -1706,11 +1706,11 @@ gdm.varImp <- function(spTable, geo, splines=NULL, knots=NULL, fullModelOnly=FAL
     stop("geo argument must be either TRUE or FALSE")
   }
   ##makes sure splines is a numeric vector
-  if(is.null(splines)==FALSE & class(splines)!="numeric"){
+  if(is.null(splines)==FALSE & !is(splines, "numeric")){
     stop("argument splines needs to be a numeric data type")
   }
   ##checks knots inputs
-  if(is.null(knots)==FALSE & class(knots)!="numeric"){
+  if(is.null(knots)==FALSE & !is(knots, "numeric")){
     stop("argument knots needs to be a numeric data type")
   }
   ##checks that fullModelOnly has either TRUE or FALSE
@@ -1891,7 +1891,7 @@ gdm.varImp <- function(spTable, geo, splines=NULL, knots=NULL, fullModelOnly=FAL
     fullGDM <- gdm(currSitePair, geo=geo, splines=splines, knots=knots)
     
     if(is.null(fullGDM)==TRUE){
-      warning(paste("The model did not fit when testing variable number ", v, ". Terminating analysis. Returning output objects filled up to the point of termination.", sep=""))
+      warning(paste("The model did not fit when testing variable: ", varNames[v], ". Terminating analysis and returning output completed to the point of termination.", sep=""))
       break
     }
     
@@ -2146,7 +2146,7 @@ permutateSitePair <- function(spTab, siteVarTab, indexTab, vNames){
   ##'unravels' the varList into a data.frame of the variable portion of a site-pair table
   bySite <- lapply(1:2, function(i,vlist){sapply(vlist, function(vl,k){vl[[k]]},k=i)}, vlist=varLists)
   
-  if(class(bySite[[1]])=="list"){
+  if(is(bySite[[1]], "list")){
     site1Vars <- do.call("cbind", bySite[[1]])
     site2Vars <- do.call("cbind", bySite[[2]])
   }else{
