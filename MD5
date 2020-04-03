@@ -1,9 +1,9 @@
-af2a45218692f94704de587fe8f26a4f *DESCRIPTION
+cbdab96be87be474dff8e57ae1aa5c9c *DESCRIPTION
 6aa860538821dcb1d340c79dd475b5c8 *NAMESPACE
 c610a0ed7a16398f8d9c6bf8f1d37884 *R/GDM_Table_Funcs.R
-375ba66d70a88d6bd74454d503c3b4d6 *build/vignette.rds
-6baa569bcb14fc7493ba592d55caa7bf *data/gdm.RData
-9d5c5a16efd7918a264740e8c7f32ce0 *inst/doc/gdmVignette.pdf
+532b9c5b311f13680613a699e0f0130c *build/vignette.rds
+a76f5581e191f3cd9529b25f290ad14d *data/gdm.RData
+79d890fc085dd76f5f52b3b424133052 *inst/doc/gdmVignette.pdf
 1a2b69b572a3165fc858d8382c7fa20c *inst/doc/gdmVignette.pdf.asis
 8592828e5093e9db9db86d6fec8b78df *inst/extdata/stackedVars.grd
 6a9aa0cb8dd7ec61fd85644b583292d1 *inst/extdata/stackedVars.gri
