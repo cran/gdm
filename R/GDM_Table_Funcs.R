@@ -1444,7 +1444,7 @@ plotUncertainty <- function(spTable, sampleSites, bsIters, geo=FALSE, splines=NU
     registerDoParallel(cl)
     ##first removes a number of sites according to input
     subSamps <- foreach(k=1:length(lstSP), .verbose=F, .packages=c("gdm")) %dopar%
-                      removeSitesFromSitePair(spTable[[k]], sampleSites=sampleSites)
+                      removeSitesFromSitePair(lstSP[[k]], sampleSites=sampleSites)
     ##models the subsamples
     gdmMods <- foreach(k=1:length(subSamps), .verbose=F, .packages=c("gdm")) %dopar%
                      #gdmMods <- try(foreach(k=1, .verbose=F, .packages=c("gdm")) %dopar%

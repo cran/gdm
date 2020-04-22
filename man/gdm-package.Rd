@@ -60,8 +60,7 @@ GDM fits biological distances to pairwise site geographical and environmental di
 }
 }
 
-\author{The \pkg{gdm} development team is Glenn Manion, Matt Lisk, Simon Ferrier, Diego Nieto-Lugilde, and Matt Fitzpatrick. Where others have contributed to
-individual functions, credits are provided in function help pages.
+\author{The \pkg{gdm} development team is Matt Fitzpatrick, Karel Mokany, Simon Ferrier, and Diego Nieto-Lugilde, using code originally developed by Glenn Manion. Where others have contributed to individual functions, credits are provided in function help pages.
 
-The maintainers of the R version of \pkg{gdm} are Matt Fitzpatrick <mfitzpatrick@al.umces.edu> and Matt Lisk <mlisk@al.umces.edu>.
+The maintainer of the R version of \pkg{gdm} is Matt Fitzpatrick <mfitzpatrick@umces.edu>.
 }
