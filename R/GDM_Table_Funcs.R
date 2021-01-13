@@ -744,37 +744,37 @@ formatsitepair <- function(bioData, bioFormat, dist="bray", abundance=FALSE,
                            weightType="equal", custWeights=NULL, sampleSites=1){
   ###########################
   ##lines used to quickly test function
-  #bioData <- sppData
-  #bioFormat <- 2
-  #dist <- "bray"
-  #abundance <- F
-  #siteColumn <- "site"
-  #XColumn <- "Long"
-  #YColumn <- "Lat"
-  #sppColumn <- "species"
-  #sppFilter <- 0
-  #abundColumn <- NULL
-  #predData <- envTab
-  #distPreds <- NULL
-  #weightType <- "equal"
-  #custWeights <- NULL
-  #sampleSites <- 1
-  #################
-  #bioData <- bio
-  #bioFormat <- 2
-  #dist <- "bray"
-  #abundance <- T
-  #siteColumn <- "site"
-  #XColumn <- "X"
-  #YColumn <- "Y"
-  #sppColumn <- "locus"
-  #sppFilter <- 0
-  #abundColumn <- "abund"
-  #predData <- preds
-  #distPreds <- NULL
-  #weightType <- "equal"
-  #custWeights <- NULL
-  #sampleSites <- 1
+  # bioData <- sppData
+  # bioFormat <- 2
+  # dist <- "bray"
+  # abundance <- F
+  # siteColumn <- "site"
+  # XColumn <- "Long"
+  # YColumn <- "Lat"
+  # sppColumn <- "species"
+  # sppFilter <- 0
+  # abundColumn <- NULL
+  # predData <- envTab
+  # distPreds <- NULL
+  # weightType <- "equal"
+  # custWeights <- NULL
+  # sampleSites <- 1
+  # ################
+  # bioData <- bio
+  # bioFormat <- 2
+  # dist <- "bray"
+  # abundance <- T
+  # siteColumn <- "site"
+  # XColumn <- "X"
+  # YColumn <- "Y"
+  # sppColumn <- "locus"
+  # sppFilter <- 0
+  # abundColumn <- "abund"
+  # predData <- preds
+  # distPreds <- NULL
+  # weightType <- "equal"
+  # custWeights <- NULL
+  # sampleSites <- 1
   ###########################
   ##input error checking
   ##makes sure bioData has the required format
@@ -1037,7 +1037,9 @@ formatsitepair <- function(bioData, bioFormat, dist="bray", abundance=FALSE,
     if(weightType=="custom" & !is.null(custWeights)){
       colnames(custWeights)[colnames(custWeights)==siteColumn] <- "gettingCoolSiteColumn"
       custWeights <- custWeights[which(predData$gettingCoolSiteColumn %in% custWeights[,"gettingCoolSiteColumn"]),]
-      custWeights <- custWeights[order(custWeights[,"gettingCoolSiteColumn"]),]
+      ord <- as.numeric(custWeights[,"gettingCoolSiteColumn"])
+      ord <- order(ord)
+      custWeights <- custWeights[ord,]
       colnames(custWeights)[colnames(custWeights)=="gettingCoolSiteColumn"] <- siteColumn
     }
     
@@ -1048,8 +1050,12 @@ formatsitepair <- function(bioData, bioFormat, dist="bray", abundance=FALSE,
     ##as a final check, makes sure bioData and predData sites are in same order
     predSite <- which(names(predData) == siteColumn)
     bioSite <- which(names(bioData)==siteColumn)
-    predData <- predData[order(predData[,predSite]),]
-    bioData <- bioData[order(bioData[,bioSite]),]
+    ord <- as.numeric(predData[,predSite])
+    ord <- order(ord)
+    predData <- predData[ord,]
+    ord <- as.numeric(bioData[,bioSite])
+    ord <- order(ord)
+    bioData <- bioData[ord,]
     
     ##sets up species data for calculating dissimilarity
     bx <- which(names(bioData)==XColumn)
@@ -1073,14 +1079,17 @@ formatsitepair <- function(bioData, bioFormat, dist="bray", abundance=FALSE,
     ##orders bioData to match ordering of predData below
     holdSite <- bioData[,which(siteColumn %in% colnames(bioData))]
     bioData <- bioData[,-which(siteColumn %in% colnames(bioData))]
-    orderedData <- as.matrix(as.dist(bioData[order(holdSite),order(holdSite)]))
+    ord <- order(holdSite)
+    orderedData <- as.matrix(as.dist(bioData[ord,ord]))
     
     ##site-site distance already calculated
     distData <- lower.tri(as.matrix(orderedData), diag=FALSE)
     distData <- as.vector(orderedData[distData])
     predData <- unique(predData)
     ##orders the prediction data by site
-    predData <- predData[order(predData[siteColumn]),]
+    ord <- as.numeric(predData[,siteColumn])
+    ord <- order(ord)
+    predData <- predData[ord,]
     ########################################################################
     ##site pair table, already preped 
   }else if(bioFormat==4){
@@ -1097,7 +1106,14 @@ formatsitepair <- function(bioData, bioFormat, dist="bray", abundance=FALSE,
   ##With the dissim distance calculated, creates and fills the table in gdm format
   if(bioFormat!=4){
     ##creates base site-pair table
-    outTable <- as.data.frame(createsitepair(dist=distData, spdata=bioData, envInfo=predData, dXCol=XColumn, dYCol=YColumn, siteCol=siteColumn, weightsType=weightType, custWeights=custWeights))
+    outTable <- as.data.frame(createsitepair(dist=distData, 
+                                             spdata=bioData, 
+                                             envInfo=predData, 
+                                             dXCol=XColumn, 
+                                             dYCol=YColumn, 
+                                             siteCol=siteColumn, 
+                                             weightsType=weightType, 
+                                             custWeights=custWeights))
   }else{
     outTable <- bioData
   }
@@ -1121,10 +1137,15 @@ formatsitepair <- function(bioData, bioFormat, dist="bray", abundance=FALSE,
     distPreds <- lapply(distPreds, function(dP){dP[,-which(siteColumn %in% colnames(dP))]})
     #print(dim(distPreds[[1]]))
     ##orders the distance matices of distPreds
-    distPreds <- mapply(function(dP, hSC){as.matrix(as.dist(dP[order(hSC),order(hSC)]))}, dP=distPreds, hSC=holdSiteCols, SIMPLIFY=FALSE)
+    distPreds <- mapply(function(dP, hSC){
+      ord <- order(hSC)
+      as.matrix(as.dist(dP[ord,ord]))}, 
+      dP=distPreds, hSC=holdSiteCols, SIMPLIFY=FALSE)
     #print(dim(distPreds[[1]]))
     ##orders the site columns to match the distance matrices
-    orderSiteCols <- lapply(holdSiteCols, function(hSC){hSC[order(hSC)]})
+    orderSiteCols <- lapply(holdSiteCols, function(hSC){
+      ord <- order(hSC)
+      hSC[ord]})
 
     ##compares sites with sites removed, for one reason or another
     rmSites <- c(toRemove, removeRand)
@@ -1214,7 +1235,8 @@ createsitepair <- function(dist, spdata, envInfo, dXCol, dYCol, siteCol,
     sppOnly <- spdata[, -c(1,2,3)]
     sppSums <- rowSums(sppOnly)
     sppSiteSums <- cbind(spdata[1], sppSums)
-    orderedSums <- sppSiteSums[order(-sppSiteSums[,2]),]
+    ord <- order(as.numeric(sppSiteSums[,2]))
+    orderedSums <- sppSiteSums[-ord,]
     richTotal <- orderedSums[1,2]+orderedSums[2,2]
   }
   
