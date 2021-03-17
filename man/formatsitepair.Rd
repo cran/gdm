@@ -75,7 +75,7 @@ Default = "equal". Defines the weighting for sites. Can be either: (1) "equal" (
 A two column matrix or data frame of user-defined site weights. The first column should be the site ID and should be named the same as that provided for siteColumn argument. The second column should be numeric weight values and should be named "weights". The weight values represent the importance of each site in model fitting, and the values in the output site-pair table is an average of the two sites in each site-pair. Required when weightType = "custom". Ignored otherwise. 
 }
   \item{sampleSites}{
-Default = 1. A number between 0-1 indicating the fraction of sites to be used to construct the site-pair table. This argument can be used to reduce the number of sites to overcome possible memory limitations when fitting models with very large numbers of sites. 
+Default = 1. A number 0 < x <= 1 indicating the fraction of sites to be used to construct the site-pair table. This argument can be used to reduce the number of sites to overcome memory limitations when fitting models with very large numbers of sites. 
 }
 }
 \details{
@@ -109,11 +109,11 @@ envTab <- gdmExpData[, c(2:ncol(gdmExpData))]
 
 #########bioFormat = 1
 ## bioData = site-species table without coordinates
-testData1a <- reshape2::dcast(sppData, site~species)
+testData1a <- reshape2::dcast(sppData, site~species, fun.aggregate = length)
 ## site-species table with coordinates
 coords <- unique(sppData[, 2:ncol(sppData)])
 testData1b <- merge(testData1a, coords, by="site")
-## site-species, table-table
+## site-species table,  env data table
 exFormat1a <- formatsitepair(testData1a, 
                             bioFormat = 1, 
                             siteColumn="site", 
@@ -121,7 +121,7 @@ exFormat1a <- formatsitepair(testData1a,
                             YColumn="Lat", 
                             predData=envTab)
 
-## site-species, table-raster
+## site-species table, env raster
 ## not run
 #exFormat1b <- formatsitepair(testData1b, 
 #                              bioFormat = 1, 
@@ -131,7 +131,7 @@ exFormat1a <- formatsitepair(testData1a,
 #                              predData=envRast)
 
 #########bioFormat = 2
-## bioData = site xy spp list, table-table
+## bioData = site xy spp list, env data table
 exFormat2a <- formatsitepair(sppData, 
                             bioFormat = 2, 
                             XColumn="Long", 
@@ -139,7 +139,7 @@ exFormat2a <- formatsitepair(sppData,
                             sppColumn="species",
                             siteColumn="site", 
                             predData=envTab)
-## site xy spp list, table-raster
+## site xy spp list, env raster
 ## commented out to reduce example run time
 #exFormat2b <- formatsitepair(sppData, 
 #                            bioFormat = 2, 

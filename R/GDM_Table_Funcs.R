@@ -804,11 +804,12 @@ formatsitepair <- function(bioData, bioFormat, dist="bray", abundance=FALSE,
     stop("abundance argument must be either TRUE or FALSE")
   }
   ##if sampleSites is not a number, then exit function
-  if(is.null(sampleSites)==TRUE){
-    stop("sampleSites argument must be a number between 0-1")
-  }
-  if(is.numeric(sampleSites)==FALSE | sampleSites<0 | sampleSites>1){
-    stop("sampleSites argument must be a number between 0-1")
+  #if(is.null(sampleSites)==TRUE){
+  #  stop("sampleSites argument must be a number between 0-1")
+  #}
+  if (is.numeric(sampleSites) == FALSE | sampleSites <= 0 | 
+      sampleSites > 1) {
+    stop("sampleSites argument must be a number 0 < x <= 1")
   }
   
   ##makes sure that sppFilter is a number, if not exit function
@@ -920,7 +921,11 @@ formatsitepair <- function(bioData, bioFormat, dist="bray", abundance=FALSE,
       preCastBio <- bioData
       colnames(preCastBio)[which(colnames(preCastBio)==siteColumn)] <- "siteUltimateCoolness"
       colnames(preCastBio)[which(colnames(preCastBio)==sppColumn)] <- "spcodeUltimateCoolness"
-      castData <- reshape2::dcast(preCastBio, fill=0, siteUltimateCoolness~spcodeUltimateCoolness, value.var=abundColumn)
+      castData <- reshape2::dcast(preCastBio, 
+                                  fill=0, 
+                                  siteUltimateCoolness~spcodeUltimateCoolness, 
+                                  value.var=abundColumn,
+                                  fun.aggregate = length)
       ##adds coordinates to the cast data
       uniqueCoords <- unique(preCastBio[which(colnames(preCastBio) %in% c("siteUltimateCoolness", XColumn, YColumn))])
       bioData <- merge(castData, uniqueCoords, by="siteUltimateCoolness")
@@ -1008,19 +1013,16 @@ formatsitepair <- function(bioData, bioFormat, dist="bray", abundance=FALSE,
     spSiteCol <- filterBioDat[1]
     bioData <- unique(merge(spSiteCol, bioData, by=siteColumn))
     
-    ##removes random sampling of sites
-    if(is.null(sampleSites)==FALSE){
-      #if(nrow(bioData)<sampleSites){
-        #warning("After species filter, fewer records remaining than specified in sampleSites, continuing without subsampling")
-      }else{
-        fullSites <- bioData[,siteCol]
-        randRows <- sample(1:nrow(bioData), round(nrow(bioData)*sampleSites,0))
+    ##subsample sites using random sampling
+    if (sampleSites < 1) {
+        fullSites <- bioData[, siteCol]
+        randRows <- sort(sample(1:nrow(bioData), 
+                                 round(nrow(bioData) * sampleSites, 0)))
         ##actual selection of the random rows to keep
         bioData <- bioData[c(randRows),]
         #removeRand <- fullLength[-(randRows)]
         ##records the sites that have been removed, for distPreds later in function
         removeRand <- fullSites[which(! (fullSites %in% bioData[,siteCol]))]
-      #} 
     }
     
     ##identifies and removes filtered out sites and sampled sites from predData
@@ -1037,7 +1039,7 @@ formatsitepair <- function(bioData, bioFormat, dist="bray", abundance=FALSE,
     if(weightType=="custom" & !is.null(custWeights)){
       colnames(custWeights)[colnames(custWeights)==siteColumn] <- "gettingCoolSiteColumn"
       custWeights <- custWeights[which(predData$gettingCoolSiteColumn %in% custWeights[,"gettingCoolSiteColumn"]),]
-      ord <- as.numeric(custWeights[,"gettingCoolSiteColumn"])
+      ord <- as.vector(custWeights[,"gettingCoolSiteColumn"])
       ord <- order(ord)
       custWeights <- custWeights[ord,]
       colnames(custWeights)[colnames(custWeights)=="gettingCoolSiteColumn"] <- siteColumn
@@ -1050,10 +1052,10 @@ formatsitepair <- function(bioData, bioFormat, dist="bray", abundance=FALSE,
     ##as a final check, makes sure bioData and predData sites are in same order
     predSite <- which(names(predData) == siteColumn)
     bioSite <- which(names(bioData)==siteColumn)
-    ord <- as.numeric(predData[,predSite])
+    ord <- as.vector(predData[,predSite])
     ord <- order(ord)
     predData <- predData[ord,]
-    ord <- as.numeric(bioData[,bioSite])
+    ord <- as.vector(bioData[,bioSite])
     ord <- order(ord)
     bioData <- bioData[ord,]
     
@@ -1087,7 +1089,7 @@ formatsitepair <- function(bioData, bioFormat, dist="bray", abundance=FALSE,
     distData <- as.vector(orderedData[distData])
     predData <- unique(predData)
     ##orders the prediction data by site
-    ord <- as.numeric(predData[,siteColumn])
+    ord <- as.vector(predData[,siteColumn])
     ord <- order(ord)
     predData <- predData[ord,]
     ########################################################################
