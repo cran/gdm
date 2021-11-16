@@ -126,6 +126,7 @@ strlcpy(char       *dst,        /* O - Destination string */
 //
 // Note that pData represents a column major matrix
 //
+
 void GDM_FitFromTable(char **wspath,
 				      double *pData,
 	                  int *pDoGeo, int *pPreds,
