@@ -7,7 +7,7 @@ Site-Pair Table}
 \usage{
 formatsitepair(bioData, bioFormat, dist="bray", abundance=FALSE, siteColumn=NULL,
 XColumn, YColumn, sppColumn=NULL, abundColumn=NULL, sppFilter=0, predData,
-distPreds=NULL, weightType="equal", custWeights=NULL, sampleSites=1)
+distPreds=NULL, weightType="equal", custWeights=NULL, sampleSites=1, verbose=FALSE)
 }
 \arguments{
 \item{bioData}{The input biological (the response variable) data table, in
@@ -76,8 +76,8 @@ of sites in the construction of the site-pair table. Note that the formatsitepai
 function will not accept only distances matrices as predictors
 (i.e., at least one predictor variable is required). If you wish to fit GDM
 using only distance matrices, provide one fake predictor (e.g., with all sites
-have the same value), plus site and coordinate columns if needed. The s1 and
-s2 columns for this variable can then be removed by hand before fitting the GDM.}
+having the same value), plus site and coordinate columns if needed. The s1 and
+s2 columns for this fake variable can then be removed by hand before fitting the GDM.}
 
 \item{weightType}{Default = "equal". Defines the weighting for sites. Can be
 either: (1) "equal" (weights for all sites set = 1), (2) "richness" (each
@@ -99,6 +99,9 @@ when weightType = "custom". Ignored otherwise.}
 of sites to be used to construct the site-pair table. This argument can be
 used to reduce the number of sites to overcome possible memory limitations
 when fitting models with very large numbers of sites.}
+
+\item{verbose}{Default = FALSE. If TRUE, summary of information regarding
+dimensions of the site-pair table will be printed that can be useful for diagnostics.}
 }
 \value{
 A formatted site-pair table containing the response (biological

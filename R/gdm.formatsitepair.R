@@ -39,7 +39,7 @@
 #' @usage
 #' formatsitepair(bioData, bioFormat, dist="bray", abundance=FALSE, siteColumn=NULL,
 #' XColumn, YColumn, sppColumn=NULL, abundColumn=NULL, sppFilter=0, predData,
-#' distPreds=NULL, weightType="equal", custWeights=NULL, sampleSites=1)
+#' distPreds=NULL, weightType="equal", custWeights=NULL, sampleSites=1, verbose=FALSE)
 #'
 #' @param bioData The input biological (the response variable) data table, in
 #' one of the four formats defined above (see Details).
@@ -107,8 +107,8 @@
 #' function will not accept only distances matrices as predictors
 #' (i.e., at least one predictor variable is required). If you wish to fit GDM
 #' using only distance matrices, provide one fake predictor (e.g., with all sites
-#' have the same value), plus site and coordinate columns if needed. The s1 and
-#' s2 columns for this variable can then be removed by hand before fitting the GDM.
+#' having the same value), plus site and coordinate columns if needed. The s1 and
+#' s2 columns for this fake variable can then be removed by hand before fitting the GDM.
 #'
 #' @param weightType Default = "equal". Defines the weighting for sites. Can be
 #' either: (1) "equal" (weights for all sites set = 1), (2) "richness" (each
@@ -130,6 +130,9 @@
 #' of sites to be used to construct the site-pair table. This argument can be
 #' used to reduce the number of sites to overcome possible memory limitations
 #' when fitting models with very large numbers of sites.
+#'
+#' @param verbose Default = FALSE. If TRUE, summary of information regarding
+#' dimensions of the site-pair table will be printed that can be useful for diagnostics.
 #'
 #' @details
 #' bioData and bioFormat:
@@ -253,7 +256,8 @@
 formatsitepair <- function(bioData, bioFormat, dist="bray", abundance=FALSE,
                            siteColumn=NULL, XColumn, YColumn, sppColumn=NULL,
                            abundColumn=NULL, sppFilter=0, predData, distPreds=NULL,
-                           weightType="equal", custWeights=NULL, sampleSites=1){
+                           weightType="equal", custWeights=NULL, sampleSites=1,
+                           verbose=FALSE){
   ###########################
   ##lines used to quickly test function
   #bioData <- sppData
@@ -316,12 +320,14 @@ formatsitepair <- function(bioData, bioFormat, dist="bray", abundance=FALSE,
   if(!(abundance==TRUE | abundance==FALSE)){
     stop("abundance argument must be either TRUE or FALSE")
   }
+
   ##if sampleSites is not a number, then exit function
-  if(is.null(sampleSites)==TRUE){
-    stop("sampleSites argument must be a number between 0-1")
-  }
-  if(is.numeric(sampleSites)==FALSE | sampleSites<0 | sampleSites>1){
-    stop("sampleSites argument must be a number between 0-1")
+  #if(is.null(sampleSites)==TRUE){
+  #  stop("sampleSites argument must be a number between 0-1")
+  #}
+  if (is.numeric(sampleSites) == FALSE | sampleSites <= 0 |
+      sampleSites > 1) {
+    stop("sampleSites argument must be a number 0 < x <= 1")
   }
 
   ##makes sure that sppFilter is a number, if not exit function
@@ -529,19 +535,16 @@ formatsitepair <- function(bioData, bioFormat, dist="bray", abundance=FALSE,
     spSiteCol <- filterBioDat[1]
     bioData <- unique(merge(spSiteCol, bioData, by=siteColumn))
 
-    ##removes random sampling of sites
-    if(is.null(sampleSites)==FALSE){
-      #if(nrow(bioData)<sampleSites){
-      #warning("After species filter, fewer records remaining than specified in sampleSites, continuing without subsampling")
-    }else{
-      fullSites <- bioData[,siteCol]
-      randRows <- sample(1:nrow(bioData), round(nrow(bioData)*sampleSites,0))
+    ##subsample sites using random sampling
+    if (sampleSites < 1) {
+      fullSites <- bioData[, siteCol]
+      randRows <- sort(sample(1:nrow(bioData),
+                              round(nrow(bioData) * sampleSites, 0)))
       ##actual selection of the random rows to keep
       bioData <- bioData[c(randRows),]
       #removeRand <- fullLength[-(randRows)]
       ##records the sites that have been removed, for distPreds later in function
       removeRand <- fullSites[which(! (fullSites %in% bioData[,siteCol]))]
-      #}
     }
 
     ##identifies and removes filtered out sites and sampled sites from predData
@@ -717,10 +720,21 @@ formatsitepair <- function(bioData, bioFormat, dist="bray", abundance=FALSE,
       }
     }
   }
-  print(paste0("Site-pair table created with ", nrow(outTable), " rows ",
-  "(", nrow(unique(outTable[,3:4]))+1, " unique sites)", " and ",
-               ncol(outTable) , " columns (", (ncol(outTable)-6)/2,
-               " environmental variables)."))
+
+  if(verbose){
+    if(weightType[1]=="equal"){
+      print("Site weighting type: Equal")
+    }else if(weightType[1]=="custom"){
+      print("Site weighting type: Custom")
+    }else{
+      print("Site weighting type: Richness")
+    }
+    print(paste0("Site-pair table created with ", nrow(outTable), " rows ",
+                 "(", nrow(unique(outTable[,3:4]))+1, " unique sites)", " and ",
+                 ncol(outTable) , " columns (", (ncol(outTable)-6)/2,
+                 " environmental variables)."))
+  }
+
   ##return output table
   class(outTable) <- c("gdmData", "data.frame")
   return(outTable)
