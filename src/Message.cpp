@@ -39,10 +39,10 @@ void Message( long long value )
 	char *p = new char [256];
 	// Modified by DNL:
 	//sprintf( p, "%1.0lf", (double)value );
-	sprintf( p, "%1.0f", (double)value );
+	snprintf( p, sizeof(p)*2, "%1.0lf", (double)value );
 #ifdef _WIN32
 	MessageBox( NULL, (LPCSTR)p, (LPCSTR)"", MB_OK );
-#endif	
+#endif
 	if ( p ) delete[] p;
 }
 
@@ -52,10 +52,10 @@ void Message( char *name, long long value )
 	char *p = new char [256];
 	// Modified by DNL:
 	//sprintf( p, "%s = %1.0lf", name, (double)value );
-	sprintf( p, "%s = %1.0f", name, (double)value );
+	snprintf( p, sizeof(p)*2, "%s = %1.0lf", name, (double)value );
 #ifdef _WIN32
 	MessageBox( NULL, (LPCSTR)p, (LPCSTR)"", MB_OK );
-#endif	
+#endif
 	if ( p ) delete[] p;
 }
 
@@ -65,10 +65,10 @@ void Message( long value, char *title )
 	char *p = new char [256];
 	// Modified by DNL:
 	//sprintf( p, "%1.0lf", (double)value );
-	sprintf( p, "%1.0f", (double)value );
+	snprintf( p, sizeof(p)*2, "%1.0lf", (double)value );
 #ifdef _WIN32
 	MessageBox( NULL, (LPCSTR)p, (LPCSTR)title, MB_OK );
-#endif	
+#endif
 	if ( p ) delete[] p;
 }
 
@@ -78,10 +78,10 @@ void Message( char *name, long long value, char *title )
 	char *p = new char [256];
 	// Modified by DNL:
 	//sprintf( p, "%s = %1.0lf", name, (double)value );
-	sprintf( p, "%s = %1.0f", name, (double)value );
+	snprintf( p, sizeof(p)*2, "%s = %1.0lf", name, (double)value );
 #ifdef _WIN32
 	MessageBox( NULL, (LPCSTR)p, (LPCSTR)title, MB_OK );
-#endif	
+#endif
 	if ( p ) delete[] p;
 }
 
@@ -93,7 +93,7 @@ void Message( char *name, long long value, char *title )
 void Message( int value )
 {
 	char *p = new char [256];
-	sprintf( p, "%d", value );
+	snprintf( p, sizeof(p)*2, "%d", value );
 #ifdef _WIN32
 	MessageBox( NULL, (LPCSTR)p, (LPCSTR)"", MB_OK );
 #endif
@@ -104,10 +104,10 @@ void Message( int value )
 void Message( char *name, int value )
 {
 	char *p = new char [256];
-	sprintf( p, "%s = %d", name, value );
+	snprintf( p, sizeof(p)*2, "%s = %d", name, value );
 #ifdef _WIN32
 	MessageBox( NULL, (LPCSTR)p, (LPCSTR)"", MB_OK );
-#endif	
+#endif
 	if ( p ) delete[] p;
 }
 
@@ -115,10 +115,10 @@ void Message( char *name, int value )
 void Message( int value, char *title )
 {
 	char *p = new char [256];
-	sprintf( p, "%d", value );
+	snprintf( p, sizeof(p)*2, "%d", value );
 #ifdef _WIN32
 	MessageBox( NULL, (LPCSTR)p, (LPCSTR)title, MB_OK );
-#endif	
+#endif
 	if ( p ) delete[] p;
 }
 
@@ -126,14 +126,12 @@ void Message( int value, char *title )
 void Message( char *name, int value, char *title )
 {
 	char *p = new char [256];
-	sprintf( p, "%s = %d", name, value );
+	snprintf( p, sizeof(p)*2,"%s = %d", name, value );
 #ifdef _WIN32
 	MessageBox( NULL, (LPCSTR)p, (LPCSTR)title, MB_OK );
-#endif	
+#endif
 	if ( p ) delete[] p;
 }
-
-
 
 //////////////////////////////////////////////////////////////////////////////////////
 //
@@ -142,10 +140,10 @@ void Message( char *name, int value, char *title )
 void Message( float value )
 {
 	char *p = new char [256];
-	sprintf( p, "%f", value );
+	snprintf( p, sizeof(p)*2, "%lf", value );
 #ifdef _WIN32
 	MessageBox( NULL, (LPCSTR)p, (LPCSTR)"", MB_OK );
-#endif	
+#endif
 	if ( p ) delete[] p;
 }
 
@@ -153,10 +151,11 @@ void Message( float value )
 void Message( char *name, float value )
 {
 	char *p = new char [256];
-	sprintf( p, "%s = %f", name, value );
+	snprintf( p, sizeof(p)*2, "%s = %lf", name, value );
+
 #ifdef _WIN32
 	MessageBox( NULL, (LPCSTR)p, (LPCSTR)"", MB_OK );
-#endif	
+#endif
 	if ( p ) delete[] p;
 }
 
@@ -165,10 +164,10 @@ void Message( char *name, float value )
 void Message( float value, char *title )
 {
 	char *p = new char [256];
-	sprintf( p, "%f", value );
+	snprintf( p, sizeof(p)*2, "%lf", value );
 #ifdef _WIN32
 	MessageBox( NULL, (LPCSTR)p, (LPCSTR)title, MB_OK );
-#endif	
+#endif
 	if ( p ) delete[] p;
 }
 
@@ -177,10 +176,11 @@ void Message( float value, char *title )
 void Message( char *name, float value, char *title )
 {
 	char *p = new char [256];
-	sprintf( p, "%s = %f", name, value );
+	snprintf( p, sizeof(p)*2, "%s = %lf", name, value );
+
 #ifdef _WIN32
 	MessageBox( NULL, (LPCSTR)p, (LPCSTR)title, MB_OK );
-#endif	
+#endif
 	if ( p ) delete[] p;
 }
 
@@ -194,10 +194,10 @@ void Message( double value )
 	char *p = new char [256];
 	// Modified by DNL:
 	//sprintf( p, "%lf", value );
-	sprintf( p, "%f", value );
+	snprintf( p, sizeof(p)*2, "%lf", value );
 #ifdef _WIN32
 	MessageBox( NULL, (LPCSTR)p, (LPCSTR)"", MB_OK );
-#endif	
+#endif
 	if ( p ) delete[] p;
 }
 
@@ -207,10 +207,11 @@ void Message( char *name, double value )
 	char *p = new char [256];
 	// Modified by DNL:
 	//sprintf( p, "%s = %lf", name, value );
-	sprintf( p, "%s = %f", name, value );
+	snprintf( p, sizeof(p)*2, "%s = %lf", name, value );
+
 #ifdef _WIN32
 	MessageBox( NULL, (LPCSTR)p, (LPCSTR)"", MB_OK );
-#endif	
+#endif
 	if ( p ) delete[] p;
 }
 
@@ -221,10 +222,10 @@ void Message( double value, char *title )
 	char *p = new char [256];
 	// Modified by DNL:
 	//sprintf( p, "%lf", value );
-	sprintf( p, "%f", value );
+	snprintf( p, sizeof(p)*2, "%lf", value );
 #ifdef _WIN32
 	MessageBox( NULL, (LPCSTR)p, (LPCSTR)title, MB_OK );
-#endif	
+#endif
 	if ( p ) delete[] p;
 }
 
@@ -235,12 +236,10 @@ void Message( char *name, double value, char *title )
 	char *p = new char [256];
 	// Modified by DNL:
 	//sprintf( p, "%s = %lf", name, value );
-	sprintf( p, "%s = %f", name, value );
+	snprintf( p, sizeof(p)*2, "%s = %lf", name, value );
+
 #ifdef _WIN32
 	MessageBox( NULL, (LPCSTR)p, (LPCSTR)title, MB_OK );
-#endif	
+#endif
 	if ( p ) delete[] p;
 }
-
-
-

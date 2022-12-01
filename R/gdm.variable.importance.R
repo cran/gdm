@@ -119,7 +119,7 @@
 #' sppColumn="species", siteColumn="site", predData=envTab)
 #'
 #' ## not run
-#' #modTest <- gdm.varImp(sitePairTab, geo=T, nPerm=50, parallel=T, cores=10)
+#' #modTest <- gdm.varImp(sitePairTab, geo=T, nPerm=50, parallel=T, cores=10, predSelect=T)
 #' #barplot(sort(modTest$`Predictor Importance`[,1], decreasing=T))
 #'
 #' @keywords gdm
@@ -264,9 +264,13 @@ gdm.varImp <- function(spTable, geo, splines=NULL, knots=NULL, predSelect=FALSE,
     varNames <- c("Geographic", varNames)
   }
 
+  if(nVars<2){
+    stop("Function requires at least two predictor variables.")
+  }
+
   # run initial GDM to see if any vars have zero I-spline coeffs
   message(paste0("Fitting initial model with all ", nVars,  " predictors..."))
-  Sys.sleep(1)
+  Sys.sleep(0.5)
   fullGDM <- gdm(spTable, geo=geo, splines=splines, knots=knots)
 
   # check for zero coeffs
@@ -283,12 +287,26 @@ gdm.varImp <- function(spTable, geo, splines=NULL, knots=NULL, predSelect=FALSE,
     sumCoeff[i] <- sum(holdCoeff)
   }
 
+  # remove any predictors with sumCoeff=0
   zeroSum <- fullGDM$predictors[which(sumCoeff==0)]
   if(length(zeroSum)>0){
-    message(paste0("Sum of I-spline coefficients for predictors(s) ", zeroSum," = 0"))
-    Sys.sleep(1)
-    message(paste0("Removing predictor(s) ", zeroSum, " and proceeding with permutation testing..."))
-    Sys.sleep(1)
+    for(p in 1:length(zeroSum)){
+      message(paste0("Sum of I-spline coefficients for predictor ", zeroSum[p]," = 0"))
+      Sys.sleep(0.5)}
+    #message("\n")
+    for(p in 1:length(zeroSum)){
+      if(zeroSum[p]=="Geographic"){
+        message("Setting Geo=FALSE and proceeding with permutation testing...")
+      } else {
+        message(paste0("Removing ", zeroSum[p], " and proceeding with permutation testing..."))
+      }
+      Sys.sleep(0.5)
+    }
+
+    if(length(grep("Geographic", zeroSum))==1){
+      geo <- FALSE
+      zeroSum <- zeroSum[-grep("Geographic", zeroSum)]
+    }
 
     for(z in zeroSum){
       ##select variable columns to be removed from original site-pair table
@@ -298,7 +316,7 @@ gdm.varImp <- function(spTable, geo, splines=NULL, knots=NULL, predSelect=FALSE,
     }
   }
 
-  # number of variables in the site-pair table, adds 1 if geo=TRUE
+  # recalculate the number of variables in the site-pair table, adds 1 if geo=TRUE
   nVars <- (ncol(spTable)-6)/2
   # create vector of variable names
   varNames <- colnames(spTable[c(7:(6+nVars))])
@@ -308,10 +326,17 @@ gdm.varImp <- function(spTable, geo, splines=NULL, knots=NULL, predSelect=FALSE,
     varNames <- c("Geographic", varNames)
   }
 
+  # stop routine if fewer than two variables remain
+  if(nVars<2){
+    stop("Function requires at least two predictor variables.")
+  }
+
+  # reduce number of cores to nVars
   if(cores>nVars){
     cores <- nVars
   }
 
+  # crate spline object
   splines <- rep(unique(splines), nVars)
 
   ##First create a spTable to determine the index of each site in the site-pair table
@@ -358,7 +383,6 @@ gdm.varImp <- function(spTable, geo, splines=NULL, knots=NULL, predSelect=FALSE,
 
   ##sets up siteXvar table, uses for loop to make sure have steps correct
   for(i in 1:length(exBySite)){
-    #i <- 42
     ##grabs row and identify if should take s1 or s2 by rather or not number appears in outsite
     siteRow <- exBySite[[i]]
     if(i %in% outSite){
@@ -377,55 +401,55 @@ gdm.varImp <- function(spTable, geo, splines=NULL, knots=NULL, predSelect=FALSE,
   siteData <- do.call("rbind", exBySite)
 
   ##sets up objects to be returned by the function
-  modelTestValues <- data.frame(matrix(NA,4,nVars,dimnames = list(c("Model deviance",
-                                                                    "Percent deviance explained",
-                                                                    "Model p-value",
-                                                                    "Fitted permutations"),
-                                                                  c("All predictors",
-                                                                    "1-removed",
-                                                                    paste(seq(2,nVars-1), "-removed", sep="")))))
+  modelTestValues <- matrix(NA,4,nVars*5,dimnames = list(c("Model deviance",
+                                                           "Percent deviance explained",
+                                                           "Model p-value",
+                                                           "Fitted permutations"),
+                                                         c("All predictors",
+                                                           "1-removed",
+                                                           paste(seq(2,nVars*5-1), "-removed", sep=""))))
   ##deviance reduction predictor table
-  varImpTable <- matrix(NA, nVars, nVars-1)
+  varImpTable <- matrix(NA, nVars, nVars*5-1)
   rownames(varImpTable) <- varNames
   colnames(varImpTable) <- c("All predictors",
                              "1-removed",
-                             paste(seq(2,nVars-2), "-removed", sep=""))
+                             paste(seq(2,nVars*5-2), "-removed", sep=""))
   ##p value predictor table
   pValues <- nModsConverge <- varImpTable
 
   ##assigns given site-pair table to new variable, to prevent changing the original input
   currSitePair <- spTable
-  nullGDMFullFit <- 0  ##a variable to track rather or not the fully fitted gdm model returned a NULL object
+  nullGDMFullFit <- 0  ##a variable to track if the fully fitted gdm model returned a NULL object
 
   # create the set up permuted site-pair tables to be used for all
   # downstream analyses
   message(paste0("Creating ", nPerm, " permuted site-pair tables..."))
 
-  if(parallel==F | nPerm <= 50){
+  # use replicate if number of perms is small or parallel == FALSE
+  if(parallel==F | nPerm <= 25){
     permSpt <- pbreplicate(nPerm, list(permutateSitePair(currSitePair,
-                                                       siteData,
-                                                       indexTab,
-                                                       varNames)))
-    }
-
-  if(parallel==T & nPerm > 50){
+                                                         siteData,
+                                                         indexTab,
+                                                         varNames)))}
+  # create permuted tables in parallel otherwise
+  if(parallel==T & nPerm > 25){
     # set up parallel processing
     cl <- makeCluster(cores)
     registerDoParallel(cl)
     permSpt <- foreach(k=1:nPerm,
-                             .verbose=F,
-                             .packages=c("gdm"),
-                             .export=c("permutateSitePair")) %dopar%
+                       .verbose=F,
+                       .packages=c("gdm"),
+                       .export=c("permutateSitePair")) %dopar%
       permutateSitePair(currSitePair, siteData, indexTab, varNames)
-    stopCluster(cl)
-  }
+    stopCluster(cl)}
 
+  # create new vector to track varNames
   varNames.x <- varNames
   message("Starting model assessment...")
   for(v in 1:length(varNames)){
     # ends the loop if only 1 variable remains
     if(length(varNames.x)<2){
-      break
+      stop("Only one predictor remains...variable assessment stopped.")
     }
 
     if(v>1){
@@ -448,6 +472,7 @@ gdm.varImp <- function(spTable, geo, splines=NULL, knots=NULL, predSelect=FALSE,
       break
     }
 
+    # fit gdm to each permuted site-pair table
     message("Fitting GDMs to the permuted site-pair tables...")
     permGDM <- lapply(permSpt, function(x){
       gdm(x, geo=geo, splines=splines, knots=knots)
@@ -473,7 +498,7 @@ gdm.varImp <- function(spTable, geo, splines=NULL, knots=NULL, predSelect=FALSE,
     ##fitted permutations
     modelTestValues[4,v] <- round(nPerm-modPerms,0)
 
-    # now permutate each variable individual and fit models
+    # now permutate each variable individually and fit models
     if(parallel==TRUE){
       if(length(varNames.x)<cores){
         cores <- length(varNames.x)
@@ -482,42 +507,43 @@ gdm.varImp <- function(spTable, geo, splines=NULL, knots=NULL, predSelect=FALSE,
       cl <- makeCluster(cores)
       registerDoParallel(cl)
 
-     # foreach function to create site-pair tables with each variable permuted,
+      # foreach function to create site-pair tables with each variable permuted,
       # fit gdms and extract deviance.
       permVarDev <- foreach(k=1:length(varNames.x),
                             .verbose=F,
                             .packages=c("gdm"),
                             .export = c("currSitePair")) %dopar%{
-        if(varNames.x[k]!="Geographic"){
-          # permute a single variable
-          lll <- lapply(permSpt, function(x, spt=currSitePair){
-            idx <- grep(varNames.x[k], colnames(x))
-            spt[,idx] <- x[,idx]
-            return(spt)
-          })}
+                              if(varNames.x[k]!="Geographic"){
+                                # permute a single variable
+                                lll <- lapply(permSpt, function(x, spt=currSitePair){
+                                  idx1 <- grep(paste("^s1.", varNames.x[k], "$", sep=""), colnames(x))
+                                  idx2 <- grep(paste("^s2.", varNames.x[k], "$", sep=""), colnames(x))
+                                  spt[,c(idx1, idx2)] <- x[,c(idx1, idx2)]
+                                  return(spt)
+                                })}
 
-        if(varNames.x[k]=="Geographic"){
-          # permute a single variable
-          lll <- lapply(permSpt, function(x, spt=currSitePair){
-            s1 <- sample(1:nrow(spt), nrow(spt))
-            s2 <- sample(1:nrow(spt), nrow(spt))
-            s3 <- sample(1:nrow(spt), nrow(spt))
-            s4 <- sample(1:nrow(spt), nrow(spt))
-            spt[,3] <- spt[s1,3]
-            spt[,4] <- spt[s2,4]
-            spt[,5] <- spt[s3,5]
-            spt[,6] <- spt[s4,6]
-            return(spt)
-          })}
+                              if(varNames.x[k]=="Geographic"){
+                                # permute a single variable
+                                lll <- lapply(permSpt, function(x, spt=currSitePair){
+                                  s1 <- sample(1:nrow(spt), nrow(spt))
+                                  s2 <- sample(1:nrow(spt), nrow(spt))
+                                  s3 <- sample(1:nrow(spt), nrow(spt))
+                                  s4 <- sample(1:nrow(spt), nrow(spt))
+                                  spt[,3] <- spt[s1,3]
+                                  spt[,4] <- spt[s2,4]
+                                  spt[,5] <- spt[s3,5]
+                                  spt[,6] <- spt[s4,6]
+                                  return(spt)
+                                })}
 
-        gdmPermVar <- lapply(lll, function(x){
-          try(gdm(x, geo=geo, splines=splines, knots=knots))
-        })
+                              gdmPermVar <- lapply(lll, function(x){
+                                try(gdm(x, geo=geo, splines=splines, knots=knots))
+                              })
 
-        ##extracts deviance of permuted gdms
-        permModelDev <- sapply(gdmPermVar, function(mod){mod$gdmdeviance})
-        return(permModelDev)
-      }
+                              ##extracts deviance of permuted gdms
+                              permModelDev <- sapply(gdmPermVar, function(mod){mod$gdmdeviance})
+                              return(permModelDev)
+                            }
 
       ##closes cores
       #close(pb)
@@ -533,8 +559,9 @@ gdm.varImp <- function(spTable, geo, splines=NULL, knots=NULL, predSelect=FALSE,
           message(paste0("Assessing importance of ", varNames.x[k], "..."))
           # permute a single variable
           lll <- lapply(permSpt, function(x, spt=currSitePair){
-            idx <- grep(varNames.x[k], colnames(x))
-            spt[,idx] <- x[,idx]
+            idx1 <- grep(paste("^s1.", varNames.x[k], "$", sep=""), colnames(x))
+            idx2 <- grep(paste("^s2.", varNames.x[k], "$", sep=""), colnames(x))
+            spt[,c(idx1, idx2)] <- x[,c(idx1, idx2)]
             return(spt)
           })}
 
@@ -558,7 +585,7 @@ gdm.varImp <- function(spTable, geo, splines=NULL, knots=NULL, predSelect=FALSE,
         })
 
         ##extracts deviance of permuted gdms
-        permVarDev[[k]] <- sapply(gdmPermVar, function(mod){mod$gdmdeviance})
+        permVarDev[[k]] <- unlist(sapply(gdmPermVar, function(mod){mod$gdmdeviance}))
       }
     }
 
@@ -566,17 +593,17 @@ gdm.varImp <- function(spTable, geo, splines=NULL, knots=NULL, predSelect=FALSE,
     nullDev <- fullGDM$nulldeviance
 
     for(var in varNames.x){
-      grepper <- grep(var, names(permVarDev))
+      grepper <- grep(paste0("^",var,"$"), names(permVarDev))
       varDevTab <- permVarDev[[grepper]]
 
       # number of perms for which GDM converged
-      nConv <- length(which(is.null(varDevTab)))
-      nModsConverge[which(rownames(varImpTable) == var),v] <- nPerm-nConv
+      nConv <- length(varDevTab)
+      nModsConverge[which(rownames(varImpTable) == var),v] <- nConv
 
       # remove NULLs (GDMs that did not converge)
-      if(nConv>0){
-        varDevTab <- unlist(varDevTab[-(which(sapply(is.null(varDevTab))))])
-      }
+      #if(nConv>0){
+        #varDevTab <- unlist(varDevTab[-(which(sapply(is.null(varDevTab))))])
+      #}
 
       # calculate variable importance
       varDevExplained <- 100*(nullDev-varDevTab)/nullDev
@@ -593,8 +620,9 @@ gdm.varImp <- function(spTable, geo, splines=NULL, knots=NULL, predSelect=FALSE,
         noVarGDM <- gdm(currSitePair, geo=F, splines=splines[-1], knots=knots)
       }
 
+      # calculate p-Value
       permDevReduct <- noVarGDM$gdmdeviance - varDevTab
-      pValues[which(rownames(pValues) == var),v] <- sum(permDevReduct>=(varDevTab - fullGDM$gdmdeviance))/(nPerm-nConv)
+      pValues[which(rownames(pValues) == var),v] <- sum(permDevReduct>=(varDevTab - fullGDM$gdmdeviance))/(nConv)
     }
 
     if(max(na.omit(pValues[,v]))<pValue){
@@ -607,22 +635,29 @@ gdm.varImp <- function(spTable, geo, splines=NULL, knots=NULL, predSelect=FALSE,
       break
     }
 
-    elimVar <- which.min(varImpTable[,v])
+    if(predSelect==T){
+      # eliminate least important variable
+      #elimVar <- which.min(varImpTable[,v])
+      # eliminate variable with highest p-value
+      elimVar <- which.max(pValues[,v])
 
-    if(names(elimVar)!="Geographic"){
-      ##select variable columns to be removed from original site-pair table
-      remVarCols1 <- grep(paste("^s1.", names(elimVar), "$", sep=""), colnames(currSitePair))
-      remVarCols2 <- grep(paste("^s2.", names(elimVar), "$", sep=""), colnames(currSitePair))
-      currSitePair <- currSitePair[,-c(remVarCols1, remVarCols2)]
-    } else {
-      geo <- F
+      if(names(elimVar)!="Geographic"){
+        ##select variable columns to be removed from original site-pair table
+        remVarCols1 <- grep(paste("^s1.", names(elimVar), "$", sep=""), colnames(currSitePair))
+        remVarCols2 <- grep(paste("^s2.", names(elimVar), "$", sep=""), colnames(currSitePair))
+
+        # remove columns from site-pair table
+        currSitePair <- currSitePair[,-c(remVarCols1, remVarCols2)]
+        # remove columns from permuted site-pair tables
+        permSpt <- lapply(permSpt, function(x){
+          x[,-c(remVarCols1, remVarCols2)]
+        })
+      } else {
+        geo <- F
+      }
+
+      varNames.x <- varNames.x[-which(varNames.x==names(elimVar))]
     }
-
-    permSpt <- lapply(permSpt, function(x){
-      x[,-c(remVarCols1, remVarCols2)]
-    })
-
-    varNames.x <- varNames.x[-which(varNames.x==names(elimVar))]
 
     if(v==1 & predSelect==F){
       message("Backwards elimination not selected by user (predSelect=F). Ceasing assessment.")
