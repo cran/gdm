@@ -30,7 +30,7 @@
 #'   \item a site-by-predictor matrix with a column for each predictor variable
 #'   and a row for each site \cr
 #'
-#'   \item a raster stack, with one raster for each predictor variable \cr
+#'   \item a terra object SpatRaster, with one raster for each predictor variable \cr
 #'
 #'   \item one or more site-by-site distance matrices using the "distPreds"
 #'   argument (see below).
@@ -94,7 +94,7 @@
 #' will be removed.
 #'
 #' @param predData The environmental predictor data. Accepts either a
-#' site-by-predictor table or a raster stack.
+#' site-by-predictor table or a terra object SpatRaster.
 #'
 #' @param distPreds An optional list of distance matrices to be used as predictors
 #' in combination with predData. For example, a site-by-site dissimilarity matrix
@@ -104,10 +104,10 @@
 #' column containing the site names should have the same name as that provided
 #' for the siteColumn argument. Site IDs are required here to ensure correct ordering
 #' of sites in the construction of the site-pair table. Note that the formatsitepair
-#' function will not accept only distances matrices as predictors
-#' (i.e., at least one predictor variable is required). If you wish to fit GDM
-#' using only distance matrices, provide one fake predictor (e.g., with all sites
-#' having the same value), plus site and coordinate columns if needed. The s1 and
+#' function will not accept distance matrices in the as the only predictors
+#' (i.e., at least one additional, non-distPreds predictor variable is required). If you wish to fit GDM
+#' using only distance matrices provided using distPreds, provide one fake predictor (e.g., with all sites
+#' having the same value), plus site and coordinate columns. The s1 and
 #' s2 columns for this fake variable can then be removed by hand before fitting the GDM.
 #'
 #' @param weightType Default = "equal". Defines the weighting for sites. Can be
@@ -140,19 +140,19 @@
 #'
 #' bioData = site-by-species matrix; bioFormat = 1: assumes that the response
 #' data are provided with a site ID column (specified by siteCol) and, optionally,
-#'  two columns for the x & y coordinates of the sites. All remaining columns
-#'  contain the biological data, with a column for each biological entity (most
-#'  commonly species). In the case that a raster stack is provided for the
-#'  environmental data (predData), x-y coordinates MUST be provided in bioData
-#'  to allow extraction of the environmental data at site locations. The x-y
-#'  coordinates will be intersected with the raster stack and, if the number of
-#'  unique cells intersected by the points is less than the number of unique site
-#'  IDs (i.e. multiple sites fall within a single cell), the function will use
-#'  the raster cell as the site ID and aggregate sites accordingly. Therefore,
-#'  model fitting will be sensitive to raster cell size. If the environmental
-#'  data are in tabular format, they should have the same number of sites
-#'  (i.e., same number of rows) as bioData. The x-y coordinate and site ID
-#'  columns must have the same names in bioData and predData.
+#' two columns for the x & y coordinates of the sites. All remaining columns
+#' contain the biological data, with a column for each biological entity (most
+#' commonly species). In the case that a raster stack (a terra object SpatRaster) is provided for the
+#' environmental data (predData), x-y coordinates MUST be provided in bioData
+#' to allow extraction of the environmental data at site locations. The x-y
+#' coordinates will be intersected with the raster stack and, if the number of
+#' unique cells intersected by the points is less than the number of unique site
+#' IDs (i.e. multiple sites fall within a single cell), the function will use
+#' the raster cell as the site ID and aggregate sites accordingly. Therefore,
+#' model fitting will be sensitive to raster cell size. If the environmental
+#' data are in tabular format, they should have the same number of sites
+#' (i.e., same number of rows) as bioData. The x-y coordinate and site ID
+#' columns must have the same names in bioData and predData.
 #'
 #' bioData = x, y, species list (optionally a fourth column with abundance can
 #' be provided); bioFormat = 2: assumes a table of 3 or 4 columns, the first two
@@ -160,12 +160,23 @@
 #' name / identifier of the species observed at that location, and optionally a
 #' fourth column indicating a measure of abundance.  If an abundance column is
 #' not provided, presence-only data are assumed. In the case that a raster stack
-#' is provided for the environmental data (predData), the x-y coordinates will
-#' be intersected with the raster stack and, if the number of unique cells
-#' intersected by the points is less than the number of unique site IDs
-#' (i.e. multiple sites fall within a single cell), the function will use the
-#' raster cell as the site ID and aggregate sites accordingly. Therefore, model
-#' fitting will be sensitive to raster cell size.
+#' (a terra object SpatRaster) is provided for the environmental data (predData),
+#' the x-y coordinates will be intersected with the raster stack and, if the
+#' number of unique cells intersected by the points is less than the number of
+#' unique site IDs (i.e. multiple sites fall within a single cell), the function
+#' will use the raster cell as the site ID and aggregate sites accordingly.
+#' Therefore, model fitting will be sensitive to raster cell size.
+#'
+#' bioData = site-site distance (dissimilarity) matrix; bioFormat = 3. This option
+#' allows the use of an existing site-site distance (dissimilarity) matrix, such as
+#' genetic distance matrix calculated outside of the gdm package. Only the lower
+#' triangle of the matrix is required to create the site-pair table, but the
+#' function will automatically removes the upper triangle if present. The code
+#' checks and aligns the order of sites in the distance matrix and the predictor
+#' data to ensure they match. To do so, (1) a site column is required in both
+#' the distance matrix and the predictor data and (2) site IDs are required to
+#' be a number. This is the only bioFormat in which the environmental data MAY
+#' NOT be a raster stack.
 #'
 #' bioData = site-pair table; bioFormat = 4: with an already created site-pair
 #' table, this option allows the user to add one or more distance matrices (see
@@ -206,7 +217,7 @@
 #' #' # next, let's try environmental raster data
 #' ## not run
 #' # rastFile <- system.file("./extdata/swBioclims.grd", package="gdm")
-#' # envRast <- stack(rastFile)
+#' # envRast <- terra::rast(rastFile)
 #'
 #' ## site-species, table-raster
 #' ## not run
@@ -226,14 +237,11 @@
 #' #########table type 3
 #' ## It is possible to format a site-pair table by starting
 #' # with a pre-calculated matrix of biological distances
-#' dim(gdmDissim) #square pairwise distance matrix
+#' dim(gdmDissim) # pairwise distance matrix + 1 column for site IDs
 #' gdmDissim[1:5, 1:5]
-#' # need to add a site ID column
-#' site <- unique(sppData$site)
-#' gdmDissim <- cbind(site, gdmDissim)
 #' # now we can format the table:
 #' exFormat3 <- formatsitepair(gdmDissim, 3, XColumn="Long", YColumn="Lat",
-#' predData=envTab, siteColumn="site")
+#'                             predData=envTab, siteColumn="site")
 #'
 #' #########table type 4
 #' ## adds a predictor matrix to an existing site-pair table, in this case,
@@ -247,10 +255,6 @@
 #' @importFrom stats as.dist
 #' @importFrom vegan vegdist
 #' @importFrom reshape2 dcast
-#' @importFrom raster cellFromXY
-#' @importFrom raster xyFromCell
-#' @importFrom raster extract
-#' @importFrom raster aggregate
 #'
 #' @export
 formatsitepair <- function(bioData, bioFormat, dist="bray", abundance=FALSE,
@@ -260,7 +264,7 @@ formatsitepair <- function(bioData, bioFormat, dist="bray", abundance=FALSE,
                            verbose=FALSE){
   ###########################
   ##lines used to quickly test function
-  #bioData <- sppData
+  #bioData <- southwest[, c(1,2,13,14)]
   #bioFormat <- 2
   #dist <- "bray"
   #abundance <- F
@@ -270,7 +274,7 @@ formatsitepair <- function(bioData, bioFormat, dist="bray", abundance=FALSE,
   #sppColumn <- "species"
   #sppFilter <- 0
   #abundColumn <- NULL
-  #predData <- envTab
+  #predData <- southwest[, c(2:ncol(southwest))]
   #distPreds <- NULL
   #weightType <- "equal"
   #custWeights <- NULL
@@ -305,11 +309,18 @@ formatsitepair <- function(bioData, bioFormat, dist="bray", abundance=FALSE,
   }
 
   ##makes sure predData is in an acceptable format
-  if(!(is(predData, "data.frame") | is(predData, "matrix") | is(predData, "RasterStack") | is(predData, "RasterLayer") | is(predData, "RasterBrick"))){
+  if(!(is(predData, "data.frame") | is(predData, "matrix") | .is_raster(predData))){
     "predData object needs to either of class data.frame, matrix, or raster."
   }
   if(is(predData, "data.frame") | is(predData, "matrix")){
     predData <- as.data.frame(predData, stringsAsFactors=F)
+  }
+
+  # make sure predData is a terra object or convert it to terra
+  if (.is_raster(predData)) {
+    # check terra package is available
+    .check_pkgs("terra")
+    predData <- .check_rast(predData, "predData")
   }
 
   ##if bioFormat is not an acceptable number, exit function
@@ -352,7 +363,7 @@ formatsitepair <- function(bioData, bioFormat, dist="bray", abundance=FALSE,
   #}
   ##makes sure that a site column is provided when using table type 2 and raster environmental data
   if(bioFormat==2 & is.null(siteColumn)==TRUE){
-    if(!(is(predData, "RasterStack") | is(predData, "RasterLayer") | is(predData, "RasterBrick"))){
+    if(!.is_raster(predData)){
       stop("A siteColumn needs to be provided in either the bioData or predData objects.")
     }
   }
@@ -391,8 +402,7 @@ formatsitepair <- function(bioData, bioFormat, dist="bray", abundance=FALSE,
       stop("Cannot weight by site richness when supplying the biological data
            as a distance matrix.")
     }else if(nrow(bioData)!=(ncol(bioData)-1)){
-      stop("Biological dissimilarity matrix must have the same number of rows
-           and columns. Did you forget to add a column for site ID's?")
+      stop("Check dimensions of the bioData object. Does the biological dissimilarity matrix have a column for site IDs as required?")
     }
   }
 
@@ -424,31 +434,33 @@ formatsitepair <- function(bioData, bioFormat, dist="bray", abundance=FALSE,
 
       ##insert a site column if one was not given
       if(is.null(siteColumn)){
-        colnames(bioData)[which(colnames(bioData)==XColumn)] <- "myXness"
-        colnames(bioData)[which(colnames(bioData)==YColumn)] <- "myYness"
-        bioData <- transform(bioData, siteUltimateCoolness=as.numeric(interaction(bioData$myXness, bioData$myYness, drop=TRUE)))
-        siteColumn <- "siteUltimateCoolness"
-        colnames(bioData)[which(colnames(bioData)=="myXness")] <- XColumn
-        colnames(bioData)[which(colnames(bioData)=="myYness")] <- YColumn
+        colnames(bioData)[which(colnames(bioData)==XColumn)] <- "bioData_FSP_xColumn"
+        colnames(bioData)[which(colnames(bioData)==YColumn)] <- "bioData_FSP_yColumn"
+        bioData <- transform(bioData,
+                             griddedSiteID=as.numeric(interaction(bioData$bioData_FSP_xColumn,
+                                                                         bioData$bioData_FSP_yColumn,
+                                                                         drop=TRUE)))
+        siteColumn <- "griddedSiteID"
+        colnames(bioData)[which(colnames(bioData)=="bioData_FSP_xColumn")] <- XColumn
+        colnames(bioData)[which(colnames(bioData)=="bioData_FSP_yColumn")] <- YColumn
       }
 
       ##insert presence if abundance was not given
       if(is.null(abundColumn)){
-        warning("No abundance column was specified, so the species data are
-                assumed to be presences.")
-        bioData["reallysupercoolawesomedata"] <- 1
-        abundColumn <- "reallysupercoolawesomedata"
+        warning("No abundance column was specified, so the biological data are assumed to be presences.")
+        bioData[, "bioData_FSP_abundColumn"] <- 1
+        abundColumn <- "bioData_FSP_abundColumn"
       }
 
       ##rename the siteColumn and sppColumn in order to cast the data into a siteXspp matrix
       preCastBio <- bioData
-      colnames(preCastBio)[which(colnames(preCastBio)==siteColumn)] <- "siteUltimateCoolness"
-      colnames(preCastBio)[which(colnames(preCastBio)==sppColumn)] <- "spcodeUltimateCoolness"
-      castData <- dcast(preCastBio, fill=0, siteUltimateCoolness~spcodeUltimateCoolness, value.var=abundColumn)
+      colnames(preCastBio)[which(colnames(preCastBio)==siteColumn)] <- "griddedSiteID"
+      colnames(preCastBio)[which(colnames(preCastBio)==sppColumn)] <- "bioData_FSP_sppColumn"
+      castData <- dcast(preCastBio, fill=0, griddedSiteID~bioData_FSP_sppColumn, value.var=abundColumn)
       ##adds coordinates to the cast data
-      uniqueCoords <- unique(preCastBio[which(colnames(preCastBio) %in% c("siteUltimateCoolness", XColumn, YColumn))])
-      bioData <- merge(castData, uniqueCoords, by="siteUltimateCoolness")
-      colnames(bioData)[which(colnames(bioData)=="siteUltimateCoolness")] <- siteColumn
+      uniqueCoords <- unique(preCastBio[which(colnames(preCastBio) %in% c("griddedSiteID", XColumn, YColumn))])
+      bioData <- merge(castData, uniqueCoords, by="griddedSiteID")
+      colnames(bioData)[which(colnames(bioData)=="griddedSiteID")] <- siteColumn
     }
 
     ##checks to see if the coordinates can be found in bioData, if not, checks to see if
@@ -463,21 +475,22 @@ formatsitepair <- function(bioData, bioFormat, dist="bray", abundance=FALSE,
       locs <- bioData[c(xCol,yCol)]
     }
 
-    ##checks unique sites against rasters
-    if(is(predData, "RasterStack") | is(predData, "RasterLayer") | is(predData, "RasterBrick")){
-      ##when using rasters, uses the cell as the site
-      warning("When using rasters for prediction data, sites are assigned to the
-              cells in which they are located and then aggreagted as necessary (e.g.,
-              if more than one site falls in the same raster cell - common for rasters
-              with large cells).")
-      ##gets the cell location of the given coordinates
-      cellID <- as.data.frame(cellFromXY(predData, locs))
-      colnames(cellID)[which(colnames(cellID)=="cellFromXY(predData, locs)")] <- "cellName"
-      ##if none of the points intersected with the prediction raster
-      if(nrow(cellID)==sum(is.na(cellID$cellName))){
+    # checks unique sites against rasters
+    if(.is_raster(predData)){
+
+      # when using rasters, uses the cell as the site
+      warning("When using rasters for environmental covariates (predictors), each site is assigned to the
+              raster cell in which the site is located. If more than one site occurs within the same raster cell,
+              the biological data of those sites are aggregated (more likely as raster resolution decreases).")
+      # gets the cell location of the given coordinates
+      cellID <- data.frame(cellName = terra::cellFromXY(predData, locs))
+
+      # if none of the points intersected with the predictor raster
+      if (all(is.na(cellID$cellName))) {
         stop("None of the data points provided intersect with the rasters. Double check spatial data.")
       }
-      cellLocs <- as.data.frame(xyFromCell(predData, cellID$cellName))
+
+      cellLocs <- as.data.frame(terra::xyFromCell(predData, cellID$cellName))
       ##temporarily keeps old site in to identify what to remove from other objects
       rastBioData <- cbind(cellID, cellLocs, bioData[-c(which(colnames(bioData) %in% c(XColumn, YColumn)))])
 
@@ -495,11 +508,11 @@ formatsitepair <- function(bioData, bioFormat, dist="bray", abundance=FALSE,
 
       ##aggregates species data by cell
       cellNum <- which(colnames(rastBioData)=="cellName")
-      bioData <- aggregate(rastBioData, rastBioData[cellNum], FUN=mean)
+      bioData <- stats::aggregate(rastBioData, rastBioData[cellNum], FUN=mean)
       bioData <- bioData[-cellNum]
 
-      ##extracts raster data into environmental prediction data table
-      rastEx <- as.data.frame(extract(predData, bioData$cellName))
+      # extracts raster data into environmental predictor data table
+      rastEx <- terra::extract(predData, bioData$cellName)
 
       ##renames bioData columns which have been updated from rasters
       colnames(bioData)[which(colnames(bioData)=="cellName")] <- siteColumn
@@ -521,7 +534,7 @@ formatsitepair <- function(bioData, bioFormat, dist="bray", abundance=FALSE,
     siteCol <- which(colnames(bioData)==siteColumn)
     xCol <- which(colnames(bioData)==XColumn)
     yCol <- which(colnames(bioData)==YColumn)
-    sppDat <- bioData[-c(siteCol, xCol, yCol)]
+    sppDat <- bioData[, -c(siteCol, xCol, yCol)]
     ##totals the number of species per site
     sppDat[sppDat>=1] <- 1
     sppDat[sppDat==0] <- 0
@@ -598,21 +611,26 @@ formatsitepair <- function(bioData, bioFormat, dist="bray", abundance=FALSE,
     }
 
     ########################################################################
-    ##species data as site-site distance matrix
+    ##species data as site-by-site distance matrix
   }else if(bioFormat==3){
-    ##orders bioData to match ordering of predData below
-    holdSite <- bioData[,which(siteColumn %in% colnames(bioData))]
-    bioData <- bioData[,-which(siteColumn %in% colnames(bioData))]
-    orderedData <- as.matrix(as.dist(bioData[order(holdSite),order(holdSite)]))
-
-    ##site-site distance already calculated
-    distData <- lower.tri(as.matrix(orderedData), diag=FALSE)
-    distData <- as.vector(orderedData[distData])
+    holdSite <- bioData[, which(siteColumn %in% colnames(bioData))]
+    if(!is.numeric(holdSite)){
+      stop("Site IDs must be numeric when providing a site-by-site distance matrix (bioFormat=3).")
+    }
+    bioData <- bioData[, -which(siteColumn %in% colnames(bioData))]
+    orderedData <- as.matrix(as.dist(bioData[order(holdSite),
+                                             order(holdSite)]))
+    # Date: 04/16/2024
+    # Note: The upper triangle of the distance matrix should be converted to a vector by row so we need to transpose the distance matrix first
+    #       to make sure the the order of pair-wise distances in the vector matches with other of predictors in the data frame generated by gdm.formatsitepair function.
+    #       This was fixed by Xin Chen.
+    distData <- lower.tri(as.matrix(orderedData), diag = FALSE)
+    # distData <- as.vector(orderedData[distData])
+    distData <- as.vector(t(orderedData)[distData])
     predData <- unique(predData)
-    ##orders the prediction data by site
-    hwap <- predData[siteColumn][,1]
+    hwap <- predData[siteColumn][, 1]
     hwap <- order(hwap)
-    predData <- predData[hwap,]
+    predData <- predData[order(holdSite), ]
     ########################################################################
     ##site pair table, already prepped
   }else if(bioFormat==4){

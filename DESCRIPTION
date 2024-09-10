@@ -1,7 +1,7 @@
 Package: gdm
 Title: Generalized Dissimilarity Modeling
-Version: 1.5.0-9.1
-Date: 2022-11-17
+Version: 1.6.0-1
+Date: 2024-09-04
 Authors@R: 
     c(person("Matt", "Fitzpatrick", email="mfitzpatrick@umces.edu", 
     role = c("aut", "cre"),
@@ -13,6 +13,7 @@ Authors@R:
 		    comment=c(ORCID = "0000-0003-4135-2881")),
 		    person("Simon", "Ferrier", role="aut",
 		    comment = c(ORCID = "0000-0001-7884-2388")),
+		    person("Roozbeh", "Valavi", role="ctb"),
 		    person("Matthew", "Lisk", role="ctb"),
 		    person("Chris", "Ware", role="ctb"),
 		    person("Skip", "Woolley", role="ctb"),
@@ -21,26 +22,28 @@ Description: A toolkit with functions to fit, plot, summarize, and apply General
 License: GPL (>= 3)
 Depends: R (>= 3.5.0)
 Encoding: UTF-8
-RoxygenNote: 7.1.2
+RoxygenNote: 7.3.2
 Config/testthat/edition: 3
 LazyData: true
 URL: https://mfitzpatrick.al.umces.edu/gdm/,
         https://github.com/fitzLab-AL/gdm/
 BugReports: https://github.com/fitzLab-AL/gdm/issues/
-Imports: parallel, methods, raster, Rcpp, reshape2, vegan, doParallel,
-        foreach, pbapply
+Imports: parallel, methods, Rcpp, reshape2, vegan, doParallel, foreach,
+        pbapply
+Suggests: tinytest, scales, terra
 LinkingTo: Rcpp
 NeedsCompilation: yes
-Packaged: 2022-11-28 21:52:51 UTC; mfitzpatrick
+Packaged: 2024-09-10 18:09:02 UTC; mfitzpatrick
 Author: Matt Fitzpatrick [aut, cre] (<https://orcid.org/0000-0003-1911-8407>),
   Karel Mokany [aut] (<https://orcid.org/0000-0003-4199-3697>),
   Glenn Manion [aut],
   Diego Nieto-Lugilde [aut] (<https://orcid.org/0000-0003-4135-2881>),
   Simon Ferrier [aut] (<https://orcid.org/0000-0001-7884-2388>),
+  Roozbeh Valavi [ctb],
   Matthew Lisk [ctb],
   Chris Ware [ctb],
   Skip Woolley [ctb],
   Tom Harwood [ctb]
 Maintainer: Matt Fitzpatrick <mfitzpatrick@umces.edu>
 Repository: CRAN
-Date/Publication: 2022-12-01 15:30:02 UTC
+Date/Publication: 2024-09-10 18:30:02 UTC
