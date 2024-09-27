@@ -1,7 +1,11 @@
 <!-- See http://style.tidyverse.org/news.html for advice on writing news -->
 
-# gdm 1.6.0-1
-* Minor update to address new CRAN C++11 requirements.
+# gdm 1.6.0-2
+### bug fixes
+* Fix negative deviance explained values returned by `gdm.crossvalidation`.  
+
+### Updates
+* Address new CRAN C++11 requirements.
 
 # gdm 1.6.0
 * Transition to `terra` functionality for much faster processing of rasters.  
