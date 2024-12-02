@@ -1,6 +1,4 @@
 
-<!-- DO NOT EDIT BY HAND! README.Rmd is generated from README.md. Please edit that file. -->
-
 # gdm <img src="man/figures/gdmLogo.png" align="right" width="120" />
 
 <!-- badges: start -->
@@ -36,8 +34,8 @@ devtools::install_github("fitzLab-AL/gdm")
 
 # Package Citation
 
-Fitzpatrick MC, Mokany K, Manion G, Nieto-Lugilde D, Ferrier S. (2021)
-gdm: Generalized Dissimilarity Modeling. R package version 1.5.
+Fitzpatrick MC, Mokany K, Manion G, Nieto-Lugilde D, Ferrier S. (2024)
+gdm: Generalized Dissimilarity Modeling. R package version 1.6.
 
 # New update of v1.6
 
