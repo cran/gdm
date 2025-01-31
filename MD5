@@ -1,6 +1,6 @@
-f5d4095377f8bbe7f5975e7790905ed2 *DESCRIPTION
+6524258a4723ae0d1a5477fb43a2a3ed *DESCRIPTION
 1fe05a7eaf10b57d0e9936212f4be2fc *NAMESPACE
-947353fab1006424ebfa0fe20c5eff1e *NEWS.md
+42e5aca98dec16787719911f3c66f7ad *NEWS.md
 0aae5ab864087c68fa486149f699bae8 *R/data.R
 845990d8b406d5d978f40df822ac731a *R/gdm-package.R
 6beca9eeccb788e16641a4217a736844 *R/gdm.calculate.deviance.R
@@ -29,7 +29,7 @@ af096ed0e89eb47e439598f097e0562b *inst/extdata/swBioclims.grd
 ad1525adab14aec19a09f76e7123836c *inst/extdata/test_data/gdm_trans_vars.gri
 a69b51bac09568303c265e32be405557 *inst/extdata/test_data/pred_3_75.tif
 fd944bbdd8e1ce0fdc369183601c2144 *inst/extdata/test_data/site_pair.csv
-a9cf31c9506f43b99023ccf7375dacb9 *inst/tinytest/test_gdm.R
+6458411242f6033fa4ad5538e3efb610 *inst/tinytest/test_gdm.R
 fbdb0a8bf9a8133674132408f6175d5a *man/calculate.gdm.deviance.Rd
 67a2d8bc9be2724910848801fe932dfd *man/createsitepair.Rd
 558cd51c3e706b51d227b13ce428665f *man/figures/README-extractSplines-1.png
