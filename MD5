@@ -1,4 +1,4 @@
-6524258a4723ae0d1a5477fb43a2a3ed *DESCRIPTION
+feb02126c8c29bfb1dd9c51d8ef83e8e *DESCRIPTION
 1fe05a7eaf10b57d0e9936212f4be2fc *NAMESPACE
 42e5aca98dec16787719911f3c66f7ad *NEWS.md
 0aae5ab864087c68fa486149f699bae8 *R/data.R
@@ -19,7 +19,7 @@ bc5ff686e8e7ecc698db73ba9b5733cf *R/gdm.single.crossvalidation.R
 4b1417b537823f2e19337d4edc305349 *R/gdm.subsample.sitepair.R
 4c6f36af12c42c9adefe2dd28cb1fe5f *R/gdm.summary.R
 f8c2d5367c20a664ee4ec0674c463f3f *R/gdm.transform.R
-81ce02bf0aa7024847b8d709d538ff80 *R/gdm.variable.importance.R
+50e1208518b68a8d7880b3d81d839c76 *R/gdm.variable.importance.R
 8f7a86bd5456b31b75115c7dd5b762e7 *README.md
 560c191c1bef384a550e975644ecb7b2 *data/gdmDissim2.RData
 d179bc320f593c94a6d3cd1b5586e3d1 *data/southwest.RData
@@ -58,7 +58,7 @@ cb2963872d3c33ce2afc8c7e09380544 *man/southwest.Rd
 19a1eb420680e7b4b2f1f64874f8c047 *man/subsample.sitepair.Rd
 076f8964c82ab3ec9e27591583d2399f *man/summary.gdm.Rd
 98045d8387d5fcba2b687f75258feb58 *src/GDM_Globals.h
-08e45fee03196edec0a2cb31e7d1339d *src/Gdmlib.cpp
+5f8d0b02ef929fc50c5c27c5c140c5e4 *src/Gdmlib.cpp
 6b61afefcad97a58a0ef9a2025f1761c *src/Gdmlib.h
 f4aef200ad2f8cabb2408ecceb3417e8 *src/Makevars
 0bd541cbbd07b0e861637bb4d3ed84ad *src/Makevars.win
